@@ -218,8 +218,8 @@ body{margin:0;font-size:14px}
 <div class="wrap">
   <header>
     <p class="eyebrow">2026 Brazilian Presidential Runoff · Monte Carlo</p>
-    <h1>Lula vs Flávio — tomorrow's odds</h1>
-    <p class="sub">A probabilistic model of the October 25 second round, aggregating the public valid-vote polls and simulating 40,000 elections. Move the sliders to test different assumptions about polling error and late swing.</p>
+    <h1>Can Lula win? — tomorrow's odds</h1>
+    <p class="sub">A probabilistic model of Lula's chance in the October 25 second round against Flávio Bolsonaro, aggregating the public valid-vote polls and simulating 40,000 elections. Move the sliders to test different assumptions about polling error and late swing.</p>
     <p class="disc"><b>This is a model, not a prediction.</b> The race is a statistical tie; polls can be collectively wrong, as Brazil's 2022 runoff showed. The output is a range of plausible outcomes under assumptions you control — not a forecast of who will win.</p>
   </header>
 
@@ -243,34 +243,34 @@ body{margin:0;font-size:14px}
   </section>
 
   <section class="card dist">
-    <h2>Distribution of Flávio's valid-vote share</h2>
-    <p class="note">Each simulated election is one draw. Everything right of the 50% line is a Flávio win; everything left is a Lula win.</p>
-    <div class="chartwrap"><canvas id="chart" aria-label="Simulated distribution of Flávio's vote share"></canvas></div>
+    <h2>Distribution of Lula's valid-vote share</h2>
+    <p class="note">Each simulated election is one draw. Everything right of the 50% line is a Lula win; everything left is a Flávio win.</p>
+    <div class="chartwrap"><canvas id="chart" aria-label="Simulated distribution of Lula's vote share"></canvas></div>
     <div class="legend">
-      <span><span class="dot" style="background:var(--flavio)"></span>Flávio wins (&gt;50%)</span>
-      <span><span class="dot" style="background:var(--lula)"></span>Lula wins (&lt;50%)</span>
+      <span><span class="dot" style="background:var(--lula)"></span>Lula wins (&gt;50%)</span>
+      <span><span class="dot" style="background:var(--flavio)"></span>Flávio wins (&lt;50%)</span>
       <span><span class="dot" style="background:var(--muted);width:3px;height:13px;border-radius:1px"></span>median outcome</span>
     </div>
   </section>
 
   <section class="stats">
     <div class="stat"><div class="k">Central estimate</div><div class="v" id="sCentral">—</div></div>
-    <div class="stat"><div class="k">80% range · Flávio</div><div class="v" id="sRange">—</div></div>
+    <div class="stat"><div class="k">80% range · Lula</div><div class="v" id="sRange">—</div></div>
     <div class="stat"><div class="k">Expected margin</div><div class="v" id="sMargin">—</div></div>
   </section>
 
   <section class="card trend">
     <h2>Trend to election day</h2>
     <p class="note">What happens if the recent movement in the checked polls carries on until the vote. Each pollster is compared only with itself, so a firm that always runs high for one candidate doesn't fake a trend. Uses every checked poll, including older waves from the same pollster. Lines join polls from the same pollster.</p>
-    <div class="chartwrap"><canvas id="trendChart" aria-label="Flávio's valid-vote share in the checked polls by release date, with the trend line projected to 25 October"></canvas></div>
+    <div class="chartwrap"><canvas id="trendChart" aria-label="Lula's valid-vote share in the checked polls by release date, with the trend line projected to 25 October"></canvas></div>
     <div class="legend">
-      <span><span class="dot" style="background:var(--flavio)"></span>poll with Flávio ahead</span>
-      <span><span class="dot" style="background:var(--lula)"></span>Lula ahead</span>
+      <span><span class="dot" style="background:var(--lula)"></span>poll with Lula ahead</span>
+      <span><span class="dot" style="background:var(--flavio)"></span>Flávio ahead</span>
       <span><span class="dot" style="background:var(--fg);width:14px;height:3px;border-radius:1px"></span>trend, dashed beyond the latest poll</span>
     </div>
     <div class="tstats">
       <div class="stat"><div class="k">Movement per day</div><div class="v" id="tSlope">—</div></div>
-      <div class="stat"><div class="k">Projected for 25 Oct · Flávio</div><div class="v" id="tProj">—</div></div>
+      <div class="stat"><div class="k">Projected for 25 Oct · Lula</div><div class="v" id="tProj">—</div></div>
       <div class="stat"><div class="k">Odds if the trend holds</div><div class="v" id="tOdds">—</div></div>
     </div>
     <p class="note" id="tNote" style="margin-top:10px">—</p>
@@ -280,7 +280,7 @@ body{margin:0;font-size:14px}
     <h2>Other ways to read the same polls</h2>
     <p class="note">The same checked polls and settings, run through different probability models. Hover or tap <span class="info-i" aria-hidden="true">i</span> for how each one works and where it goes wrong; open ▸ to see its curve. <b>Precision</b> is the width of the 80% range: narrower means more certain, not more accurate. No model can be scored until the result is in.</p>
     <table class="cmp">
-      <thead><tr><th>Model</th><th class="num">Flávio share</th><th class="num">Lula wins</th><th class="num">Flávio wins</th><th class="num rng">80% range</th><th>Precision</th></tr></thead>
+      <thead><tr><th>Model</th><th class="num">Lula share</th><th class="num">Lula wins</th><th class="num">Flávio wins</th><th class="num rng">80% range</th><th>Precision</th></tr></thead>
       <tbody id="cmpBody"></tbody>
     </table>
   </section>
@@ -291,7 +291,7 @@ body{margin:0;font-size:14px}
     <div class="presets" id="presets">
       <button class="preset" data-preset="base">Base case</button>
       <button class="preset" data-preset="tight">Polls dead-on</button>
-      <button class="preset" data-preset="miss2022">2022-style miss →Flávio</button>
+      <button class="preset" data-preset="miss2022">2022-style miss (polls over-read Lula)</button>
       <button class="preset" data-preset="lulaswing">Late Lula swing</button>
       <button class="preset" data-preset="noise">High uncertainty</button>
     </div>
@@ -299,13 +299,13 @@ body{margin:0;font-size:14px}
     <div class="ctl">
       <div class="row"><label for="sigma">Polling error (how far off polls could collectively be)</label><span class="val" id="sigmaV"></span></div>
       <input type="range" id="sigma" min="0.5" max="4" step="0.1">
-      <p class="hint">Standard deviation on Flávio's final vote share, in points (the margin moves twice as much). The dominant source of uncertainty — sampling error is tiny once polls are pooled. ~2 pts (±4 at 95%) matches recent Brazilian runoff accuracy.</p>
+      <p class="hint">Standard deviation on Lula's final vote share, in points (the margin moves twice as much). The dominant source of uncertainty — sampling error is tiny once polls are pooled. ~2 pts (±4 at 95%) matches recent Brazilian runoff accuracy.</p>
     </div>
 
     <div class="ctl">
       <div class="row"><label for="bias">Late swing / house-effect adjustment</label><span class="val" id="biasV"></span></div>
       <input type="range" id="bias" min="-4" max="4" step="0.1">
-      <p class="hint">Shifts the whole distribution. Positive = toward Flávio (e.g. a polls-underestimate-the-right effect); negative = toward Lula. Zero = take the poll average at face value.</p>
+      <p class="hint">Shifts the whole distribution. Positive = toward Lula; negative = toward Flávio (e.g. polls under-counting the right, as in 2022). Zero = take the poll average at face value.</p>
     </div>
 
     <div class="ctl">
@@ -347,11 +347,11 @@ body{margin:0;font-size:14px}
     <div class="method">
       <p>The model treats the runoff as a two-way race on <b>valid votes</b> and asks: given the polls, what range of outcomes is plausible once we admit that polls can be wrong together?</p>
       <h3>1 · Aggregate</h3>
-      <p>Each poll's Flávio valid-vote share is pooled into a weighted average. Weight = recency decay × (optional) √sample size, capped at 5,000; every pollster is treated as equally accurate. By default only each pollster's latest poll counts, so a firm that publishes every few days doesn't get extra say, and polls released more than 10 days before the vote are left out. Where a poll reported only total votes, the valid share is computed as Flávio ÷ (Flávio + Lula).</p>
+      <p>Each poll's Lula valid-vote share is pooled into a weighted average. Weight = recency decay × (optional) √sample size, capped at 5,000; every pollster is treated as equally accurate. By default only each pollster's latest poll counts, so a firm that publishes every few days doesn't get extra say, and polls released more than 10 days before the vote are left out. Where a poll reported only total votes, the valid share is computed as Lula ÷ (Lula + Flávio).</p>
       <h3>2 · Model the uncertainty</h3>
       <p>The headline number isn't the point — the spread is. Each of 40,000 simulated elections draws a final margin from a normal distribution centered on the weighted average (plus any swing adjustment), with standard deviation set by the <code>polling error</code> slider. This "all polls off together" term dominates because pooled sampling error is negligible.</p>
       <h3>3 · Count</h3>
-      <p>The win probability is simply the share of the 40,000 simulations each candidate wins. The distribution chart is the histogram of those draws.</p>
+      <p>Lula's win probability is simply the share of the 40,000 simulations in which his share exceeds 50%. The distribution chart is the histogram of those draws.</p>
       <h3>Honest limits</h3>
       <ul>
         <li>Garbage in, garbage out: if the polls share a systematic bias, so will this.</li>
@@ -370,7 +370,7 @@ body{margin:0;font-size:14px}
 
 
 <script>
-// ---------- poll data (valid-vote two-way Flávio share) ----------
+// ---------- poll data (valid-vote two-way share; the model works in Lula's share) ----------
 // daysBeforeVote measured from election day, 25 Oct 2026
 // Poll data lives in polls.json (generated from data/polls.csv by scripts/build_dashboard_data.py)
 let POLLS = [];
@@ -381,8 +381,8 @@ let S = {...BASE};
 const PRESETS = {
   base:      {...BASE},
   tight:     {...BASE, sigma:0.8, bias:0},
-  miss2022:  {...BASE, sigma:2.0, bias:1.8},
-  lulaswing: {...BASE, sigma:2.0, bias:-1.5},
+  miss2022:  {...BASE, sigma:2.0, bias:-1.8},
+  lulaswing: {...BASE, sigma:2.0, bias:1.5},
   noise:     {...BASE, sigma:3.5, bias:0},
 };
 
@@ -420,15 +420,18 @@ function aggregate(){
   if(!list.length) return null;
   const w=weights(list);
   const W=w.reduce((a,b)=>a+b,0);
-  const m=list.reduce((a,p,i)=>a+p.flavio*w[i],0)/W;      // weighted mean Flávio share
+  const m=list.reduce((a,p,i)=>a+p.lula*w[i],0)/W;      // weighted mean Lula share
   return {list,w,W,m};
 }
 
-// ---------- normal RNG (Box–Muller) ----------
+// ---------- normal RNG (Box–Muller on a seeded generator, so a reload gives the same odds) ----------
+let rngState=1;
+function rand(){ rngState|=0; rngState=rngState+0x6D2B79F5|0; let t=Math.imul(rngState^rngState>>>15,1|rngState);
+  t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }
 let spare=null;
 function randn(){
   if(spare!==null){const s=spare;spare=null;return s;}
-  let u=0,v=0;while(u===0)u=Math.random();while(v===0)v=Math.random();
+  let u=0,v=0;while(u===0)u=rand();while(v===0)v=rand();
   const r=Math.sqrt(-2*Math.log(u)), t=2*Math.PI*v;
   spare=r*Math.sin(t); return r*Math.cos(t);
 }
@@ -438,7 +441,8 @@ const N=40000;
 let samples=new Float64Array(N);
 function simulate(agg){
   const center=agg.m + S.bias;
-  let wins=0;
+  rngState=20261025; spare=null;
+  let wins=0;                                   // simulations Lula wins
   for(let i=0;i<N;i++){
     const x=center + S.sigma*randn();
     samples[i]=x;
@@ -447,7 +451,7 @@ function simulate(agg){
   const sorted=Float64Array.from(samples).sort();
   const q=p=>sorted[Math.min(N-1,Math.floor(p*N))];
   return {
-    pF:wins/N, pL:1-wins/N,
+    pL:wins/N, pF:1-wins/N,
     center, median:q(.5),
     p10:q(.10), p90:q(.90), p025:q(.025), p975:q(.975),
     sorted
@@ -504,8 +508,8 @@ function draw(res){
     ctx.fillStyle=color; ctx.globalAlpha=.9; ctx.fill(); ctx.globalAlpha=1;
   }
   // clip-ish: draw full curve regions
-  area(lo,50,hexA(colL,.78));
-  area(50,hi,hexA(colF,.82));
+  area(lo,50,hexA(colF,.78));
+  area(50,hi,hexA(colL,.82));
 
   // outline
   ctx.beginPath();
@@ -524,7 +528,7 @@ function draw(res){
   ctx.beginPath();ctx.moveTo(mx,y0);ctx.lineTo(mx,Y(sm[Math.min(BINS-1,Math.max(0,Math.floor((res.median-lo)/bw)))]));ctx.stroke();
 }
 // ---------- trend to election day ----------
-// Within-pollster regression: Flávio share = pollster level + slope × days before the vote.
+// Within-pollster regression: Lula share = pollster level + slope × days before the vote.
 // Only pollsters with two or more checked polls (on different days) inform the slope.
 function normCdf(z){
   const t=1/(1+0.3275911*Math.abs(z)/Math.SQRT2);
@@ -536,8 +540,8 @@ function trend(agg){
   on.forEach(p=>(groups[p.name]=groups[p.name]||[]).push(p));
   let sxx=0,sxy=0,nObs=0,nGroups=0; const repeat=[];
   for(const [name,ps] of Object.entries(groups)){
-    const tm=ps.reduce((a,p)=>a+p.days,0)/ps.length, ym=ps.reduce((a,p)=>a+p.flavio,0)/ps.length;
-    ps.forEach(p=>{sxx+=(p.days-tm)**2; sxy+=(p.days-tm)*(p.flavio-ym);});
+    const tm=ps.reduce((a,p)=>a+p.days,0)/ps.length, ym=ps.reduce((a,p)=>a+p.lula,0)/ps.length;
+    ps.forEach(p=>{sxx+=(p.days-tm)**2; sxy+=(p.days-tm)*(p.lula-ym);});
     nObs+=ps.length; nGroups++;
     if(ps.length>1 && ps.some(p=>p.days!==ps[0].days)) repeat.push(name);
   }
@@ -546,8 +550,8 @@ function trend(agg){
   const b=sxy/sxx;                       // pts per day before the vote
   let rss=0;
   for(const ps of Object.values(groups)){
-    const tm=ps.reduce((a,p)=>a+p.days,0)/ps.length, ym=ps.reduce((a,p)=>a+p.flavio,0)/ps.length;
-    ps.forEach(p=>{rss+=((p.flavio-ym)-b*(p.days-tm))**2;});
+    const tm=ps.reduce((a,p)=>a+p.days,0)/ps.length, ym=ps.reduce((a,p)=>a+p.lula,0)/ps.length;
+    ps.forEach(p=>{rss+=((p.lula-ym)-b*(p.days-tm))**2;});
   }
   const se=Math.sqrt(rss/dof/sxx);
   // 97.5% Student-t quantile for the leftover degrees of freedom; few repeat polls means a shaky error estimate.
@@ -557,8 +561,8 @@ function trend(agg){
   const tbar=agg.list.reduce((a,p,i)=>a+p.days*agg.w[i],0)/agg.W;
   const center=agg.m+S.bias, proj=center+perDay*tbar;
   const sd=Math.sqrt(S.sigma**2+(tbar*se*tq/1.96)**2);
-  const pF=1-normCdf((50-proj)/sd);
-  return {ok:true,repeat,perDay,se,tq,dof,tbar,center,proj,sd,pF,nObs};
+  const pL=1-normCdf((50-proj)/sd);
+  return {ok:true,repeat,perDay,se,tq,dof,tbar,center,proj,sd,pL,nObs};
 }
 const tcanvas=$('trendChart'); const tctx=tcanvas.getContext('2d');
 function drawTrend(tr){
@@ -569,7 +573,7 @@ function drawTrend(tr){
   const on=POLLS.filter(p=>p.on); if(!on.length) return;
   const padL=40,padR=14,padT=12,padB=26, x0=padL,x1=cssW-padR,y0=cssH-padB,y1=padT;
   const dMax=Math.max(...on.map(p=>p.days))+0.5;
-  const vals=on.map(p=>p.flavio).concat([50]); if(tr.ok) vals.push(tr.proj, tr.center+tr.perDay*(tr.tbar-dMax));
+  const vals=on.map(p=>p.lula).concat([50]); if(tr.ok) vals.push(tr.proj, tr.center+tr.perDay*(tr.tbar-dMax));
   let lo=Math.floor(Math.min(...vals)-0.5), hi=Math.ceil(Math.max(...vals)+0.5);
   lo=Math.max(40,lo); hi=Math.min(60,hi);
   const X=d=>x0+(dMax-d)/dMax*(x1-x0), Y=v=>y0-(v-lo)/(hi-lo)*(y0-y1);
@@ -595,9 +599,9 @@ function drawTrend(tr){
   Object.values(groups).forEach(ps=>{
     ps.sort((a,b)=>b.days-a.days);
     if(ps.length>1){ tctx.strokeStyle=hexA(muted,.55); tctx.lineWidth=1.2; tctx.beginPath();
-      ps.forEach((p,i)=>i?tctx.lineTo(X(p.days),Y(p.flavio)):tctx.moveTo(X(p.days),Y(p.flavio))); tctx.stroke(); }
-    ps.forEach(p=>{ tctx.fillStyle=p.flavio>50?cssv('--flavio'):p.flavio<50?cssv('--lula'):muted;
-      tctx.beginPath(); tctx.arc(X(p.days),Y(p.flavio),3.5,0,2*Math.PI); tctx.fill(); });
+      ps.forEach((p,i)=>i?tctx.lineTo(X(p.days),Y(p.lula)):tctx.moveTo(X(p.days),Y(p.lula))); tctx.stroke(); }
+    ps.forEach(p=>{ tctx.fillStyle=p.lula>50?cssv('--lula'):p.lula<50?cssv('--flavio'):muted;
+      tctx.beginPath(); tctx.arc(X(p.days),Y(p.lula),3.5,0,2*Math.PI); tctx.fill(); });
   });
   if(!tr.ok) return;
   // trend line through the model's average, solid over the poll window, dashed to election day
@@ -612,11 +616,11 @@ function renderTrend(agg){
   if(!agg){ drawTrend({ok:false}); clear('No polls selected.'); return; }
   const tr=trend(agg); drawTrend(tr);
   if(!tr.ok){ clear('Not enough to measure a trend: it needs at least one pollster with two checked polls released on different days. Untick "Exclude polls older than 10 days" or tick older waves in the table.'); return; }
-  const who=v=>v>=0?'Flávio':'Lula', col=v=>v>=0?'--flavio':'--lula';
-  const pd=tr.perDay, pF=Math.round(tr.pF*100);
+  const who=v=>v>=0?'Lula':'Flávio', col=v=>v>=0?'--lula':'--flavio';
+  const pd=tr.perDay, pL=Math.round(tr.pL*100);
   $('tSlope').innerHTML=`<span style="color:var(${col(pd)})">${pd>=0?'+':'−'}${Math.abs(pd).toFixed(2)}</span> <small>pts/day ${who(pd)} · ±${tr.se.toFixed(2)}</small>`;
-  $('tProj').innerHTML=`<span style="color:var(--flavio)">${fmt1(tr.proj)}</span> <small>Flávio</small> · <span style="color:var(--lula)">${fmt1(100-tr.proj)}</span> <small>Lula</small>`;
-  $('tOdds').innerHTML=`<span style="color:var(--lula)">${100-pF}%</span> <small>Lula</small> · <span style="color:var(--flavio)">${pF}%</span> <small>Flávio</small>`;
+  $('tProj').innerHTML=`<span style="color:var(--lula)">${fmt1(tr.proj)}</span> <small>Lula</small> · <span style="color:var(--flavio)">${fmt1(100-tr.proj)}</span> <small>Flávio</small>`;
+  $('tOdds').innerHTML=`<span style="color:var(--lula)">${pL}%</span> <small>Lula</small> · <span style="color:var(--flavio)">${100-pL}%</span> <small>Flávio</small>`;
   const sig=Math.abs(pd)<tr.tq*tr.se;
   $('tNote').innerHTML=`Measured from ${tr.repeat.length} pollster${tr.repeat.length>1?'s':''} with repeat polls (${tr.repeat.map(esc).join(', ')}). `+
     `The model's average reflects polls about ${fmt1(tr.tbar)} days old on average, so the trend is carried forward that many days to 25 Oct. `+
@@ -629,36 +633,36 @@ function t4Cdf(t){ const u=t/Math.sqrt(1+t*t/4); return 0.5+0.375*u*(1-t*t/(12*(
 const Z80=1.2816, T4_80=1.5332;          // 90th percentiles of the normal and t(4)
 function compareModels(agg){
   const list=agg.list, bias=S.bias, sig=S.sigma, rows=[];
-  const normal=(c,sd)=>({c, pF:1-normCdf((50-c)/sd), lo:c-Z80*sd, hi:c+Z80*sd,
+  const normal=(c,sd)=>({c, pL:1-normCdf((50-c)/sd), lo:c-Z80*sd, hi:c+Z80*sd,
     pdf:x=>Math.exp(-(((x-c)/sd)**2)/2)/(sd*Math.sqrt(2*Math.PI))});
   rows.push({key:'this', name:'This dashboard', ...normal(agg.m+bias,sig),
-    tip:'<b>Weighted average + normal polling error.</b> Each poll is weighted by recency and, if ticked, sample size; the average is shifted by the swing slider and given a ±σ polling error set by the slider. Simple and transparent; assumes every pollster is equally accurate and that a miss of more than 2σ is very rare.'});
-  const avg=list.reduce((a,p)=>a+p.flavio,0)/list.length;
+    tip:'<b>Weighted average of Lula\'s share + normal polling error.</b> Each poll is weighted by recency and, if ticked, sample size; the average is shifted by the swing slider and given a ±σ polling error set by the slider. Simple and transparent; assumes every pollster is equally accurate and that a miss of more than 2σ is very rare.'});
+  const avg=list.reduce((a,p)=>a+p.lula,0)/list.length;
   rows.push({name:'Simple average', ...normal(avg+bias,sig),
     tip:'<b>Plain mean of the polls, no weights.</b> A 3-week-old poll counts as much as yesterday\'s and a 1,000-person poll as much as a 15,000-person one. Hard to game, but slow to react to late movement.'});
-  const srt=list.map(p=>p.flavio).sort((a,b)=>a-b), mid=srt.length>>1;
+  const srt=list.map(p=>p.lula).sort((a,b)=>a-b), mid=srt.length>>1;
   const med=srt.length%2?srt[mid]:(srt[mid-1]+srt[mid])/2;
   rows.push({name:'Median poll', ...normal(med+bias,sig),
     tip:'<b>Middle poll, same polling error.</b> Ignores outliers entirely: one pollster far from the rest can\'t move it. Throws away information about how far the others lean.'});
   const ct=agg.m+bias, sc=sig/Math.SQRT2;  // t(4) scaled to the same standard deviation as the slider
-  rows.push({name:'Fat tails (Student-t)', c:ct, pF:1-t4Cdf((50-ct)/sc), lo:ct-T4_80*sc, hi:ct+T4_80*sc,
+  rows.push({name:'Fat tails (Student-t)', c:ct, pL:1-t4Cdf((50-ct)/sc), lo:ct-T4_80*sc, hi:ct+T4_80*sc,
     pdf:x=>0.375*(1+((x-ct)/sc)**2/4)**-2.5/sc,
     tip:'<b>Same average and overall spread, but shaped like real polling errors.</b> A Student-t (4 degrees of freedom) is more peaked in the middle and has longer tails than a normal curve. Small misses become more common and big misses (like Brazil 2022) more likely too, so a modest lead looks a bit safer while a large upset is less far-fetched.'});
   if(list.length>=2){
-    const m=agg.m, sd=Math.sqrt(list.reduce((a,p)=>a+(p.flavio-m)**2,0)/(list.length-1));
+    const m=agg.m, sd=Math.sqrt(list.reduce((a,p)=>a+(p.lula-m)**2,0)/(list.length-1));
     rows.push({name:'Pollster disagreement', ...normal(m+bias,Math.max(sd,0.1)),
       tip:`<b>Uses how much the pollsters disagree as the error.</b> Standard deviation across the selected polls is ±${fmt1(sd)} pts. If pollsters cluster tightly this looks confident, but they can all be wrong together, which this can\'t see.`});
   }
   let iv=0, ivm=0;
-  list.forEach(p=>{ const v=p.flavio*(100-p.flavio)/p.n; iv+=1/v; ivm+=p.flavio/v; });
+  list.forEach(p=>{ const v=p.lula*(100-p.lula)/p.n; iv+=1/v; ivm+=p.lula/v; });
   rows.push({name:'Sampling error only', ...normal(ivm/iv+bias,Math.sqrt(1/iv)),
     tip:`<b>Pools the polls as if they were one big random sample.</b> Weights each poll by the inverse of its sampling variance, giving a margin of only ±${fmt1(Math.sqrt(1/iv))} pts. Shown as a warning: it ignores that polls share errors (who answers, turnout, wording), so it is badly overconfident.`});
   const tr=trend(agg);
-  if(tr.ok) rows.push({name:'Trend projection', ...normal(tr.proj,tr.sd), pF:tr.pF,
+  if(tr.ok) rows.push({name:'Trend projection', ...normal(tr.proj,tr.sd), pL:tr.pL,
     tip:'<b>Carries the recent within-pollster movement forward to 25 Oct.</b> See "Trend to election day" above. Adds the trend\'s own uncertainty to the polling error. Late trends often stall, so this is a what-if.'});
-  const ahead=list.reduce((a,p)=>a+(p.flavio>50?1:p.flavio===50?0.5:0),0);
-  rows.push({name:'Count of polls', c:null, pF:ahead/list.length, lo:null, hi:null, pdf:null,
-    tip:'<b>Share of selected polls with Flávio ahead (ties count half).</b> Not really a probability: a poll at 50.1 counts the same as one at 55. Included because headlines often read the race this way.'});
+  const ahead=list.reduce((a,p)=>a+(p.lula>50?1:p.lula===50?0.5:0),0);
+  rows.push({name:'Count of polls', c:null, pL:ahead/list.length, lo:null, hi:null, pdf:null,
+    tip:'<b>Share of selected polls with Lula ahead (ties count half).</b> Not really a probability: a poll at 50.1 counts the same as one at 55. Included because headlines often read the race this way.'});
   return rows;
 }
 // Rows start collapsed; the ones the reader opens stay open across re-renders.
@@ -670,23 +674,23 @@ function renderCompare(agg){
   const wmax=Math.max(...rows.filter(r=>r.lo!==null).map(r=>r.hi-r.lo));
   // one x-axis for every chart so the curves can be compared by eye
   const c0=agg.m+S.bias, half=Math.max(5,3.5*S.sigma);
-  const dom=[Math.max(40,Math.floor(Math.min(c0-half,...agg.list.map(p=>p.flavio-1)))),
-             Math.min(60,Math.ceil(Math.max(c0+half,...agg.list.map(p=>p.flavio+1))))];
+  const dom=[Math.max(40,Math.floor(Math.min(c0-half,...agg.list.map(p=>p.lula-1)))),
+             Math.min(60,Math.ceil(Math.max(c0+half,...agg.list.map(p=>p.lula+1))))];
   rows.forEach((r,i)=>{
     const open=CMP_OPEN.has(r.name), id='cmpx'+i;
     const tr=document.createElement('tr'); tr.className=(r.key==='this'?'this ':'')+'mrow';
-    const pF=Math.round(r.pF*100), w=r.lo===null?null:r.hi-r.lo;
+    const pL=Math.round(r.pL*100), w=r.lo===null?null:r.hi-r.lo;
     tr.innerHTML=`
       <td><button type="button" class="xbtn" aria-expanded="${open}" aria-controls="${id}" aria-label="Show graph for ${esc(r.name)}"><span class="chev" aria-hidden="true">▸</span></button>
         <span class="tip mname" tabindex="0">${esc(r.name)} <span class="info-i" aria-hidden="true">i</span><span class="tipbox" role="tooltip">${r.tip}</span></span></td>
-      <td class="num" style="color:var(--flavio)">${r.c===null?'—':fmt1(r.c)+'%'}</td>
-      <td class="num" style="color:var(--lula)">${100-pF}%</td>
-      <td class="num" style="color:var(--flavio)">${pF}%</td>
+      <td class="num" style="color:var(--lula)">${r.c===null?'—':fmt1(r.c)+'%'}</td>
+      <td class="num" style="color:var(--lula)">${pL}%</td>
+      <td class="num" style="color:var(--flavio)">${100-pL}%</td>
       <td class="num rng">${r.lo===null?'—':fmt1(r.lo)+'–'+fmt1(r.hi)}</td>
       <td>${w===null?'<span style="color:var(--faint)">n/a</span>':`<span class="pbarmini" style="width:${Math.max(3,w/wmax*70)}px"></span> <span style="font-family:var(--font-mono);font-size:12px;color:var(--muted)">±${fmt1(w/2)}</span>`}</td>`;
     const xr=document.createElement('tr'); xr.className='xrow'; xr.id=id; xr.hidden=!open;
-    xr.innerHTML=`<td colspan="6"><canvas aria-label="${esc(r.name)}: ${r.pdf?'probability curve of Flávio\'s share':'selected polls'}"></canvas>
-      <p class="xcap">${r.pdf?`Shaded blue: Flávio wins (${pF}%). Red: Lula wins (${100-pF}%). Ticks along the bottom are the selected polls.`:'Each dot is a selected poll. The odds are just the share of dots right of 50%.'}</p></td>`;
+    xr.innerHTML=`<td colspan="6"><canvas aria-label="${esc(r.name)}: ${r.pdf?'probability curve of Lula\'s share':'selected polls'}"></canvas>
+      <p class="xcap">${r.pdf?`Shaded red: Lula wins (${pL}%). Blue: Flávio wins (${100-pL}%). Ticks along the bottom are the selected polls.`:'Each dot is a selected poll. The odds are just the share of dots right of 50%.'}</p></td>`;
     const btn=tr.querySelector('.xbtn');
     btn.addEventListener('click',()=>{
       const now=!CMP_OPEN.has(r.name); now?CMP_OPEN.add(r.name):CMP_OPEN.delete(r.name);
@@ -713,14 +717,14 @@ function drawModel(cv,r,[lo,hi],list){
     const fill=(a,b,col)=>{ c.beginPath(); c.moveTo(X(a),y0);
       xs.forEach((x,i)=>{ if(x>=a&&x<=b) c.lineTo(X(x),Y(ys[i])); });
       c.lineTo(X(b),Y(r.pdf(b))); c.lineTo(X(b),y0); c.closePath(); c.fillStyle=hexA(col,.75); c.fill(); };
-    fill(lo,50,colL); fill(50,hi,colF);
+    fill(lo,50,colF); fill(50,hi,colL);
     c.beginPath(); xs.forEach((x,i)=>i?c.lineTo(X(x),Y(ys[i])):c.moveTo(X(x),Y(ys[i]))); c.strokeStyle=hexA(fg,.4); c.lineWidth=1.3; c.stroke();
-    list.forEach(p=>{ c.strokeStyle=muted; c.lineWidth=1.5; c.beginPath(); c.moveTo(X(p.flavio),y0+3); c.lineTo(X(p.flavio),y0+11); c.stroke(); });
+    list.forEach(p=>{ c.strokeStyle=muted; c.lineWidth=1.5; c.beginPath(); c.moveTo(X(p.lula),y0+3); c.lineTo(X(p.lula),y0+11); c.stroke(); });
   } else {
     const seen={};
-    list.forEach(p=>{ const k=p.flavio.toFixed(1); seen[k]=(seen[k]||0)+1;
-      c.fillStyle=p.flavio>50?colF:p.flavio<50?colL:muted;
-      c.beginPath(); c.arc(X(p.flavio),y0-8-(seen[k]-1)*12,5,0,2*Math.PI); c.fill(); });
+    list.forEach(p=>{ const k=p.lula.toFixed(1); seen[k]=(seen[k]||0)+1;
+      c.fillStyle=p.lula>50?colL:p.lula<50?colF:muted;
+      c.beginPath(); c.arc(X(p.lula),y0-8-(seen[k]-1)*12,5,0,2*Math.PI); c.fill(); });
   }
   c.strokeStyle=fg; c.lineWidth=1.5; c.setLineDash([4,4]); c.beginPath(); c.moveTo(X(50),y1); c.lineTo(X(50),y0); c.stroke(); c.setLineDash([]);
 }
@@ -776,23 +780,26 @@ function render(){
   }
   renderTrend(agg); renderCompare(agg);
   const res=simulate(agg);
-  const pF=Math.round(res.pF*100), pL=100-pF;
+  const pL=Math.round(res.pL*100), pF=100-pL;
   $('probL').textContent=pL+'%'; $('probF').textContent=pF+'%';
   $('segL').style.width=res.pL*100+'%'; $('segF').style.width=res.pF*100+'%';
 
-  const leader = res.pF>=res.pL?'Flávio':'Lula';
-  const lead = Math.max(pF,pL);
+  // Verdict is written from Lula's side; it never names a favorite at an exact tie.
   let verdict;
-  if(Math.abs(pF-50)<=6) verdict=`A coin-flip. <b>${leader}</b> is a marginal favorite at ${lead}%, well inside the uncertainty.`;
-  else if(lead<65) verdict=`<b>${leader}</b> is a slight favorite (${lead}%), but the outcome is far from settled.`;
-  else if(lead<80) verdict=`<b>${leader}</b> is favored at ${lead}% under these assumptions.`;
-  else verdict=`<b>${leader}</b> is a strong favorite (${lead}%) under these assumptions.`;
-  $('fav').innerHTML=verdict+` <span class="chip">central: Flávio ${fmt1(res.center)}%</span>`;
+  if(pL===pF) verdict=`A coin-flip. <b>Lula</b> wins exactly half of the simulations; neither candidate is favored.`;
+  else if(Math.abs(pL-50)<=6) verdict=`A coin-flip. <b>Lula</b> wins ${pL}% of the simulations — a marginal ${pL>50?'favorite':'underdog'}, well inside the uncertainty.`;
+  else if(pL>=65&&pL<80) verdict=`<b>Lula</b> is favored at ${pL}% under these assumptions.`;
+  else if(pL>=80) verdict=`<b>Lula</b> is a strong favorite (${pL}%) under these assumptions.`;
+  else if(pL>50) verdict=`<b>Lula</b> is a slight favorite (${pL}%), but the outcome is far from settled.`;
+  else if(pL>35) verdict=`<b>Lula</b> is a slight underdog: he wins ${pL}% of the simulations, Flávio ${pF}%.`;
+  else if(pL>20) verdict=`<b>Lula</b> trails: he wins ${pL}% of the simulations under these assumptions, Flávio ${pF}%.`;
+  else verdict=`<b>Lula</b> is a long shot at ${pL}% under these assumptions; Flávio wins ${pF}%.`;
+  $('fav').innerHTML=verdict+` <span class="chip">average: Lula ${fmt1(res.center)}% · Flávio ${fmt1(100-res.center)}%</span>`;
 
-  $('sCentral').innerHTML=`<span style="color:var(--flavio)">${fmt1(res.center)}</span> <small>Flávio</small> · <span style="color:var(--lula)">${fmt1(100-res.center)}</span> <small>Lula</small>`;
+  $('sCentral').innerHTML=`<span style="color:var(--lula)">${fmt1(res.center)}</span> <small>Lula</small> · <span style="color:var(--flavio)">${fmt1(100-res.center)}</span> <small>Flávio</small>`;
   $('sRange').innerHTML=`${fmt1(res.p10)}–${fmt1(res.p90)}<small> %</small>`;
-  const mg=res.center-50; const mgWho=mg>=0?'Flávio':'Lula';
-  const mgcol=mg>=0?'--flavio':'--lula';
+  const mg=res.center-50; const mgWho=mg>=0?'Lula':'Flávio';
+  const mgcol=mg>=0?'--lula':'--flavio';
   $('sMargin').innerHTML=`<span style="color:var(${mgcol})">${mg>=0?'+':''}${fmt1(mg*2)}</span> <small>${mgWho}</small>`;
 
   draw(res);
@@ -845,7 +852,7 @@ function syncInputs(){
   $('nweight').checked=S.nweight;
   $('latestOnly').checked=S.latestOnly; $('exclOld').checked=S.exclOld;
   $('sigmaV').textContent='±'+fmt1(S.sigma)+' pts';
-  $('biasV').textContent=(S.bias>0?'+':'')+fmt1(S.bias)+' pts'+(S.bias>0?' →Flávio':S.bias<0?' →Lula':'');
+  $('biasV').textContent=(S.bias>0?'+':'')+fmt1(S.bias)+' pts'+(S.bias>0?' →Lula':S.bias<0?' →Flávio':'');
   $('hlV').textContent=fmt1(S.hl)+' days';
 }
 function bindRange(id,key){
