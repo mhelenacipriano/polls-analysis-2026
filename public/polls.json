@@ -12,6 +12,18 @@
     "src": "https://www.cnnbrasil.com.br/eleicoes/datafolha-flavio-tem-52-dos-votos-validos-lula-48/"
   },
   {
+    "id": "df1b",
+    "name": "Datafolha",
+    "field": "Oct 13-14",
+    "released": "2026-10-15",
+    "days": 10,
+    "n": 2520,
+    "flavio": 51.0,
+    "groupA": true,
+    "reg": "BR-00466/2026",
+    "src": "https://www.gazetadopovo.com.br/eleicoes/2026/pesquisa-eleitoral-2026/datafolha-presidente-outubro-2026-segundo-turno-2/"
+  },
+  {
     "id": "at1",
     "name": "AtlasIntel",
     "field": "Oct 3-8",
@@ -22,6 +34,18 @@
     "groupA": true,
     "reg": "BR-03663/2026",
     "src": "https://www.cnnbrasil.com.br/eleicoes/atlas-flavio-tem-528-dos-votos-validos-no-2o-turno-lula-472/"
+  },
+  {
+    "id": "vx0a",
+    "name": "Vox Brasil",
+    "field": "Oct 5-7",
+    "released": "2026-10-09",
+    "days": 16,
+    "n": 2100,
+    "flavio": 49.1,
+    "groupA": false,
+    "reg": "BR-09623/2026",
+    "src": "https://exame.com/brasil/pesquisa-vox-brasil-lula-tem-442-e-flavio-bolsonaro-427-no-2o-turno/"
   },
   {
     "id": "pd1",
@@ -70,6 +94,18 @@
     "groupA": false,
     "reg": "",
     "src": "https://www.metropoles.com/brasil/ipespe-flavio-tem-505-e-lula-marca-495-dos-votos-validos-no-2o-turno"
+  },
+  {
+    "id": "vx0b",
+    "name": "Vox Brasil",
+    "field": "Oct 15-17",
+    "released": "2026-10-18",
+    "days": 7,
+    "n": 2100,
+    "flavio": 49.0,
+    "groupA": false,
+    "reg": "BR-04332/2026",
+    "src": "https://exame.com/brasil/pesquisa-vox-brasil-lula-tem-51-e-flavio-bolsonaro-49-em-empate-tecnico/"
   },
   {
     "id": "at2",

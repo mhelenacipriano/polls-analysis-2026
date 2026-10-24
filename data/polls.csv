@@ -1,10 +1,13 @@
 id,pollster,field_dates,released,sample_size,flavio_valid,group_a,tse_registration,source
 df1,Datafolha,Oct 6-7,2026-10-08,2520,52.0,1,BR-0949/2026,https://www.cnnbrasil.com.br/eleicoes/datafolha-flavio-tem-52-dos-votos-validos-lula-48/
+df1b,Datafolha,Oct 13-14,2026-10-15,2520,51.0,1,BR-00466/2026,https://www.gazetadopovo.com.br/eleicoes/2026/pesquisa-eleitoral-2026/datafolha-presidente-outubro-2026-segundo-turno-2/
 at1,AtlasIntel,Oct 3-8,2026-10-09,5026,52.8,1,BR-03663/2026,https://www.cnnbrasil.com.br/eleicoes/atlas-flavio-tem-528-dos-votos-validos-no-2o-turno-lula-472/
+vx0a,Vox Brasil,Oct 5-7,2026-10-09,2100,49.1,0,BR-09623/2026,https://exame.com/brasil/pesquisa-vox-brasil-lula-tem-442-e-flavio-bolsonaro-427-no-2o-turno/
 pd1,PoderData/Aya,Oct 10-12,2026-10-13,3000,51.0,0,BR-01209/2026,https://sbtnews.sbt.com.br/noticia/eleicoes/poder-data-aya-flavio-tem-51-e-lula-49-no-segundo-turno
 nx1,BTG/Nexus,Oct 10-12,2026-10-13,2002,52.0,0,BR-07997/2026,https://sbtnews.sbt.com.br/noticia/eleicoes/btg-nexus-flavio-tem-48-e-lula-45-no-2-turno
 qu1,Quaest,Oct 10-13,2026-10-14,2154,51.1,1,BR-08729/2026,https://www.poder360.com.br/poder-eleicoes-2026/flavio-tem-46-e-lula-tem-44-no-2o-turno-diz-quaest/
 ip1,Ipespe/Abrapel,,2026-10-17,1500,51.2,0,,https://www.metropoles.com/brasil/ipespe-flavio-tem-505-e-lula-marca-495-dos-votos-validos-no-2o-turno
+vx0b,Vox Brasil,Oct 15-17,2026-10-18,2100,49.0,0,BR-04332/2026,https://exame.com/brasil/pesquisa-vox-brasil-lula-tem-51-e-flavio-bolsonaro-49-em-empate-tecnico/
 at2,AtlasIntel,Oct 13-18,2026-10-19,4998,51.1,1,BR-02418/2026,https://sbtnews.sbt.com.br/noticia/eleicoes/atlas-bloomberg-flavio-tem-51-1-e-lula-48-9-dos-validos
 nx2,BTG/Nexus,Oct 16-18,2026-10-19,2002,50.3,0,BR-04499/2026,https://midiamax.com.br/brasil/2026/flavio-bolsonaro-tem-503-votos-validos-contra-497-lula-aponta-btg-nexus/
 rt1,Real Time Big Data,Oct 15-19,2026-10-20,2000,52.0,1,BR-02952/2026,https://www.gazetadopovo.com.br/eleicoes/2026/pesquisa-eleitoral-2026/real-time-big-data-presidente-outubro-2026-segundo-turno/
