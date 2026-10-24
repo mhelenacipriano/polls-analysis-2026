@@ -43,10 +43,13 @@ SELECTORS = {
     "search_button": "[id='formPesquisa:idBtnPesquisar']",
     "messages": "[id='formPesquisa:msg']",
     "expired_dialog": ".ui-dialog:visible:has-text('Sessão Expirada')",
+    "results_table": "[id='formPesquisa:tabelaPesquisas']",
+    "results_rows": "[id='formPesquisa:tabelaPesquisas'] tbody tr[data-ri]",
+    "next_page": "[id='formPesquisa:tabelaPesquisas'] .ui-paginator-next:not(.ui-state-disabled)",
+    # Orange file icon: <a id="formPesquisa:tabelaPesquisas:<row>:edital" title="Abrir edital de publicação">.
+    # It submits the form with target=_blank, so the PDF opens in a new tab.
+    "edital_links": "[id^='formPesquisa:tabelaPesquisas:'][id$=':edital']",
     # Not verified against a live results page:
-    "results_rows": "form[id='formPesquisa'] tbody tr[data-ri]",
-    "results_table": "form[id='formPesquisa'] .ui-datatable",
-    "next_page": ".ui-paginator-next:not(.ui-state-disabled)",
     "detail_button": "a[title*='Detalh'], button[title*='Detalh'], .fa-search",
     "detail_close": ".ui-dialog-titlebar-close, button:has-text('Fechar'), button:has-text('Voltar')",
 }
