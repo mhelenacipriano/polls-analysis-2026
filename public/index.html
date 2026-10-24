@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lula–Flávio Runoff Model</title>
+<meta name="description" content="Monte Carlo model of the 2026 Brazilian presidential runoff, built on published valid-vote polls.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font-size:14px}
+[hidden]{display:none!important}
+
+  /* Layout: a forecast console — headline odds band on top, a probability
+     distribution as the centerpiece, model controls and the poll table below.
+     Two data colors only: PT red (Lula), PL blue (Flávio). */
+  :root{
+    --bg:#f5f6f8; --surface:#ffffff; --surface-2:#f0f2f5;
+    --fg:#14181e; --muted:#5a6470; --faint:#8b95a2; --line:#e2e6ec;
+    --lula:#c62e3a; --lula-soft:#c62e3a22;
+    --flavio:#1e6fb8; --flavio-soft:#1e6fb822;
+    --ink:#20252d; --ok:#1f8a53; --warn:#b5761d;
+    --shadow:0 1px 2px rgba(20,24,30,.05),0 6px 20px rgba(20,24,30,.06);
+    --font-display:"Archivo","Archivo",system-ui,sans-serif;
+    --font-body:"IBM Plex Sans",system-ui,sans-serif;
+    --font-mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --bg:#0e1116; --surface:#171b21; --surface-2:#1e232b;
+    --fg:#e8ebef; --muted:#9aa4b1; --faint:#6b7480; --line:#272d35;
+    --lula:#e2515d; --lula-soft:#e2515d2b;
+    --flavio:#4a93e0; --flavio-soft:#4a93e02b;
+    --ink:#e8ebef; --ok:#45c07e; --warn:#d99a3e;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+    color-scheme:dark;
+  }}
+  :root[data-theme="dark"]{
+    --bg:#0e1116; --surface:#171b21; --surface-2:#1e232b;
+    --fg:#e8ebef; --muted:#9aa4b1; --faint:#6b7480; --line:#272d35;
+    --lula:#e2515d; --lula-soft:#e2515d2b;
+    --flavio:#4a93e0; --flavio-soft:#4a93e02b;
+    --ink:#e8ebef; --ok:#45c07e; --warn:#d99a3e;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--fg);font-family:var(--font-body);line-height:1.5;
+    -webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+  .wrap{max-width:860px;margin:0 auto;
+    padding-left:max(16px,env(safe-area-inset-left,0px));
+    padding-right:max(16px,env(safe-area-inset-right,0px));
+    padding-block:22px 48px}
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.01em}
+  .eyebrow{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--faint);margin:0 0 6px}
+  header h1{font-size:clamp(26px,6vw,38px);font-weight:800;letter-spacing:-.02em}
+  .sub{color:var(--muted);font-size:14.5px;margin:8px 0 0;max-width:62ch}
+  .disc{font-size:12.5px;color:var(--faint);margin-top:14px;padding:10px 12px;border:1px solid var(--line);
+    border-radius:10px;background:var(--surface-2)}
+  .disc b{color:var(--muted);font-weight:600}
+
+  section{margin-top:26px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+
+  /* ---- odds band ---- */
+  .odds{padding:20px 20px 22px}
+  .odds-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .odds-top h2{font-size:15px;color:var(--fg)}
+  .asof{font-family:var(--font-mono);font-size:11px;color:var(--faint);letter-spacing:.03em}
+  .names{display:flex;justify-content:space-between;margin:16px 2px 8px;gap:10px}
+  .name{display:flex;flex-direction:column;gap:2px}
+  .name .who{font-family:var(--font-display);font-weight:700;font-size:15px;display:flex;align-items:center;gap:7px}
+  .name.r{text-align:right;align-items:flex-end}
+  .dot{width:11px;height:11px;border-radius:3px;flex:0 0 auto}
+  .prob{font-family:var(--font-display);font-weight:800;font-size:clamp(30px,8vw,44px);line-height:1;letter-spacing:-.02em}
+  .pbar{height:30px;border-radius:8px;overflow:hidden;display:flex;background:var(--surface-2);
+    border:1px solid var(--line)}
+  .pbar .seg{height:100%;transition:width .35s cubic-bezier(.4,0,.2,1);min-width:0}
+  .pbar .segL{background:var(--lula)}
+  .pbar .segF{background:var(--flavio)}
+  .pbar-mid{position:relative;height:0}
+  .fav{margin-top:12px;font-size:13.5px;color:var(--muted)}
+  .fav b{color:var(--fg);font-weight:600}
+  .chip{display:inline-block;font-family:var(--font-mono);font-size:11px;padding:2px 8px;border-radius:999px;
+    border:1px solid var(--line);color:var(--muted);margin-left:6px;vertical-align:middle}
+
+  /* ---- distribution ---- */
+  .dist{padding:18px 16px 14px}
+  .dist h2{font-size:15px;padding:0 4px}
+  .dist .note{font-size:12.5px;color:var(--muted);padding:3px 4px 10px}
+  .chartwrap{position:relative;width:100%}
+  canvas{display:block;width:100%;height:auto}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;padding:4px 6px 2px;font-size:12.5px;color:var(--muted)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+
+  /* ---- stat row ---- */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 13px}
+  .stat .k{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);font-family:var(--font-mono)}
+  .stat .v{font-family:var(--font-display);font-weight:700;font-size:19px;margin-top:4px}
+  .stat .v small{font-weight:500;font-size:12.5px;color:var(--muted);font-family:var(--font-body)}
+
+  /* ---- controls ---- */
+  .controls{padding:18px 18px 20px}
+  .controls h2{font-size:15px;margin-bottom:3px}
+  .controls .lead{font-size:13px;color:var(--muted);margin-bottom:16px}
+  .ctl{margin-top:16px}
+  .ctl .row{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .ctl label{font-size:13.5px;font-weight:600}
+  .ctl .val{font-family:var(--font-mono);font-size:13px;color:var(--flavio)}
+  .ctl .hint{font-size:12px;color:var(--faint);margin-top:2px;max-width:60ch}
+  input[type=range]{width:100%;margin-top:9px;accent-color:var(--ink);height:22px}
+  .toggles{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:4px}
+  .tog{display:flex;align-items:center;gap:8px;font-size:13px}
+  input[type=checkbox]{width:16px;height:16px;accent-color:var(--ink)}
+  .presets{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+  .preset{font-family:var(--font-body);font-size:12.5px;padding:7px 11px;border-radius:999px;cursor:pointer;
+    border:1px solid var(--line);background:var(--surface-2);color:var(--fg)}
+  .preset:hover{border-color:var(--muted)}
+  .preset:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--flavio);outline-offset:2px}
+  .reset{margin-top:14px;font-size:12.5px;color:var(--muted);background:none;border:none;cursor:pointer;
+    text-decoration:underline;padding:0;font-family:var(--font-body)}
+
+  /* ---- poll table ---- */
+  .polls{padding:18px 16px 14px}
+  .polls h2{font-size:15px;padding:0 4px}
+  .polls .note{font-size:12.5px;color:var(--muted);padding:3px 4px 12px}
+  .tbl-scroll{overflow-x:auto}
+  table{border-collapse:collapse;width:100%;font-size:13px;min-width:600px}
+  th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+  th{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);
+    font-weight:500;text-align:right}
+  th:first-child,td:first-child{text-align:left}
+  td.num{font-family:var(--font-mono)}
+  tr.off{opacity:.4}
+  .pollname{font-weight:600}
+  .tag{font-family:var(--font-mono);font-size:10px;padding:1px 6px;border-radius:5px;border:1px solid var(--line);
+    color:var(--muted);margin-left:6px}
+  .wbar{display:inline-block;height:7px;border-radius:3px;background:var(--flavio);vertical-align:middle;margin-left:7px}
+  .tcell{display:flex;align-items:center;justify-content:flex-start;gap:0}
+
+  details{margin-top:24px;border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}
+  summary{cursor:pointer;padding:14px 16px;font-family:var(--font-display);font-weight:700;font-size:14px;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"＋";float:right;color:var(--muted);font-weight:400}
+  details[open] summary::after{content:"－"}
+  .method{padding:0 16px 16px;font-size:13px;color:var(--muted);line-height:1.6}
+  .method h3{font-size:13px;color:var(--fg);margin:14px 0 4px;font-family:var(--font-display)}
+  .method code{font-family:var(--font-mono);font-size:12px;background:var(--surface-2);padding:1px 5px;border-radius:4px;color:var(--fg)}
+  .method ul{margin:4px 0;padding-left:18px}
+  footer{margin-top:22px;font-size:11.5px;color:var(--faint);text-align:center;line-height:1.6}
+
+  @media (max-width:520px){
+    .stats{grid-template-columns:1fr}
+    .names .prob{font-size:30px}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">2026 Brazilian Presidential Runoff · Monte Carlo</p>
+    <h1>Lula vs Flávio — tomorrow's odds</h1>
+    <p class="sub">A probabilistic model of the October 25 second round, aggregating the public valid-vote polls and simulating 40,000 elections. Move the sliders to test different assumptions about polling error and late swing.</p>
+    <p class="disc"><b>This is a model, not a prediction.</b> The race is a statistical tie; polls can be collectively wrong, as Brazil's 2022 runoff showed. The output is a range of plausible outcomes under assumptions you control — not a forecast of who will win.</p>
+  </header>
+
+  <section class="card odds">
+    <div class="odds-top">
+      <h2>Win probability</h2>
+      <span class="asof" id="asof">as of 24 Oct 2026 · eve of vote</span>
+    </div>
+    <div class="names">
+      <div class="name">
+        <span class="who"><span class="dot" style="background:var(--lula)"></span>Lula <span style="color:var(--faint);font-weight:500">PT</span></span>
+        <span class="prob" id="probL" style="color:var(--lula)">—</span>
+      </div>
+      <div class="name r">
+        <span class="who">Flávio <span style="color:var(--faint);font-weight:500">PL</span><span class="dot" style="background:var(--flavio)"></span></span>
+        <span class="prob" id="probF" style="color:var(--flavio)">—</span>
+      </div>
+    </div>
+    <div class="pbar"><div class="seg segL" id="segL"></div><div class="seg segF" id="segF"></div></div>
+    <p class="fav" id="fav">—</p>
+  </section>
+
+  <section class="card dist">
+    <h2>Distribution of Flávio's valid-vote share</h2>
+    <p class="note">Each simulated election is one draw. Everything right of the 50% line is a Flávio win; everything left is a Lula win.</p>
+    <div class="chartwrap"><canvas id="chart" aria-label="Simulated distribution of Flávio's vote share"></canvas></div>
+    <div class="legend">
+      <span><span class="dot" style="background:var(--flavio)"></span>Flávio wins (&gt;50%)</span>
+      <span><span class="dot" style="background:var(--lula)"></span>Lula wins (&lt;50%)</span>
+      <span><span class="dot" style="background:var(--muted);width:3px;height:13px;border-radius:1px"></span>median outcome</span>
+    </div>
+  </section>
+
+  <section class="stats">
+    <div class="stat"><div class="k">Central estimate</div><div class="v" id="sCentral">—</div></div>
+    <div class="stat"><div class="k">80% range · Flávio</div><div class="v" id="sRange">—</div></div>
+    <div class="stat"><div class="k">Expected margin</div><div class="v" id="sMargin">—</div></div>
+  </section>
+
+  <section class="card controls">
+    <h2>Model assumptions</h2>
+    <p class="lead">Scenarios set the sliders; adjust from there.</p>
+    <div class="presets" id="presets">
+      <button class="preset" data-preset="base">Base case</button>
+      <button class="preset" data-preset="tight">Polls dead-on</button>
+      <button class="preset" data-preset="miss2022">2022-style miss →Flávio</button>
+      <button class="preset" data-preset="lulaswing">Late Lula swing</button>
+      <button class="preset" data-preset="noise">High uncertainty</button>
+    </div>
+
+    <div class="ctl">
+      <div class="row"><label for="sigma">Polling error (how far off polls could collectively be)</label><span class="val" id="sigmaV"></span></div>
+      <input type="range" id="sigma" min="0.5" max="4" step="0.1">
+      <p class="hint">Standard deviation on Flávio's final vote share, in points (the margin moves twice as much). The dominant source of uncertainty — sampling error is tiny once polls are pooled. ~2 pts (±4 at 95%) matches recent Brazilian runoff accuracy.</p>
+    </div>
+
+    <div class="ctl">
+      <div class="row"><label for="bias">Late swing / house-effect adjustment</label><span class="val" id="biasV"></span></div>
+      <input type="range" id="bias" min="-4" max="4" step="0.1">
+      <p class="hint">Shifts the whole distribution. Positive = toward Flávio (e.g. a polls-underestimate-the-right effect); negative = toward Lula. Zero = take the poll average at face value.</p>
+    </div>
+
+    <div class="ctl">
+      <div class="row"><label for="hl">Recency half-life</label><span class="val" id="hlV"></span></div>
+      <input type="range" id="hl" min="1" max="14" step="0.5">
+      <p class="hint">How fast older polls lose weight. A 5-day half-life means a poll from 5 days ago counts half as much as today's.</p>
+    </div>
+
+    <div class="ctl">
+      <div class="toggles">
+        <label class="tog"><input type="checkbox" id="qweight">Weight high-accuracy pollsters more (Group A ×1.5)</label>
+        <label class="tog"><input type="checkbox" id="nweight">Weight by sample size</label>
+        <label class="tog"><input type="checkbox" id="latestOnly">Latest poll per pollster only</label>
+        <label class="tog"><input type="checkbox" id="incOld">Include polls older than 10 days</label>
+      </div>
+    </div>
+    <button class="reset" id="reset">Reset to base case</button>
+  </section>
+
+  <section class="card polls">
+    <h2>Polls in the model</h2>
+    <p class="note">Valid-vote two-way share (blank, null and undecided excluded). Uncheck any poll to drop it. Bars show each poll's current weight.</p>
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th>Pollster</th><th>Fieldwork</th><th>Released</th><th>Sample</th><th>Lula</th><th>Flávio</th><th>Weight</th></tr></thead>
+        <tbody id="pollBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <details>
+    <summary>How the model works</summary>
+    <div class="method">
+      <p>The model treats the runoff as a two-way race on <b>valid votes</b> and asks: given the polls, what range of outcomes is plausible once we admit that polls can be wrong together?</p>
+      <h3>1 · Aggregate</h3>
+      <p>Each poll's Flávio valid-vote share is pooled into a weighted average. Weight = recency decay × (optional) √sample size, capped at 5,000 × (optional) 1.5 for pollsters with the best recent accuracy record. By default only each pollster's latest poll counts, so a firm that publishes every few days doesn't get extra say. Where a poll reported only total votes, the valid share is computed as Flávio ÷ (Flávio + Lula).</p>
+      <h3>2 · Model the uncertainty</h3>
+      <p>The headline number isn't the point — the spread is. Each of 40,000 simulated elections draws a final margin from a normal distribution centered on the weighted average (plus any swing adjustment), with standard deviation set by the <code>polling error</code> slider. This "all polls off together" term dominates because pooled sampling error is negligible.</p>
+      <h3>3 · Count</h3>
+      <p>The win probability is simply the share of the 40,000 simulations each candidate wins. The distribution chart is the histogram of those draws.</p>
+      <h3>Honest limits</h3>
+      <ul>
+        <li>Garbage in, garbage out: if the polls share a systematic bias, so will this.</li>
+        <li>No state-level or electoral-geography modeling — it's a national popular-vote runoff, so one number decides it.</li>
+        <li>Most of the Oct 24 eve-of-vote batch (Datafolha, Quaest, AtlasIntel, Nexus, Palver and others) was still unpublished at 14:00 on Oct 24; only CNT/MDA is in.</li>
+        <li>Pollsters that release only total votes or use different question wording aren't adjusted for house effects.</li>
+        <li>Normality is an approximation; real polling errors can be fat-tailed.</li>
+      </ul>
+    </div>
+  </details>
+
+  <footer>
+    Poll data: <code>data/polls.csv</code> in the repository, with a source link for every row.<br>Figures are modeled estimates, not official results. 
+  </footer>
+</div>
+
+
+<script>
+// ---------- poll data (valid-vote two-way Flávio share) ----------
+// daysBeforeVote measured from election day, 25 Oct 2026
+// Poll data lives in polls.json (generated from data/polls.csv by scripts/build_dashboard_data.py)
+let POLLS = [];
+const fmtDate = iso => new Date(iso+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+
+const BASE = {sigma:2.0, bias:0, hl:5, qweight:true, nweight:true, latestOnly:true, incOld:true};
+let S = {...BASE};
+const PRESETS = {
+  base:      {...BASE},
+  tight:     {...BASE, sigma:0.8, bias:0},
+  miss2022:  {...BASE, sigma:2.0, bias:1.8},
+  lulaswing: {...BASE, sigma:2.0, bias:-1.5},
+  noise:     {...BASE, sigma:3.5, bias:0},
+};
+
+const $=id=>document.getElementById(id);
+const fmt1=x=>x.toFixed(1);
+const cssv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+// ---------- aggregation ----------
+function isActive(p){
+  if(!p.on) return false;
+  if(!S.incOld && p.days>10) return false;
+  if(S.latestOnly){
+    // keep only the most recent checked poll from this pollster
+    const newer = POLLS.some(q=>q.on && q.name===p.name && q.days<p.days && (S.incOld||q.days<=10));
+    if(newer) return false;
+  }
+  return true;
+}
+function activePolls(){ return POLLS.filter(isActive); }
+function weights(list){
+  return list.map(p=>{
+    let w = Math.pow(0.5, p.days / S.hl);        // recency
+    if(S.nweight) w *= Math.sqrt(Math.min(p.n,5000)); // sample size, capped so one huge online panel can't dominate
+    else w *= Math.sqrt(2000);                   // neutral baseline so scale is stable
+    if(S.qweight && p.groupA) w *= 1.5;          // pollster quality
+    return w;
+  });
+}
+function aggregate(){
+  const list=activePolls();
+  if(!list.length) return null;
+  const w=weights(list);
+  const W=w.reduce((a,b)=>a+b,0);
+  const m=list.reduce((a,p,i)=>a+p.flavio*w[i],0)/W;      // weighted mean Flávio share
+  return {list,w,W,m};
+}
+
+// ---------- normal RNG (Box–Muller) ----------
+let spare=null;
+function randn(){
+  if(spare!==null){const s=spare;spare=null;return s;}
+  let u=0,v=0;while(u===0)u=Math.random();while(v===0)v=Math.random();
+  const r=Math.sqrt(-2*Math.log(u)), t=2*Math.PI*v;
+  spare=r*Math.sin(t); return r*Math.cos(t);
+}
+
+// ---------- simulate ----------
+const N=40000;
+let samples=new Float64Array(N);
+function simulate(agg){
+  const center=agg.m + S.bias;
+  let wins=0;
+  for(let i=0;i<N;i++){
+    const x=center + S.sigma*randn();
+    samples[i]=x;
+    if(x>50) wins++;
+  }
+  const sorted=Float64Array.from(samples).sort();
+  const q=p=>sorted[Math.min(N-1,Math.floor(p*N))];
+  return {
+    pF:wins/N, pL:1-wins/N,
+    center, median:q(.5),
+    p10:q(.10), p90:q(.90), p025:q(.025), p975:q(.975),
+    sorted
+  };
+}
+
+// ---------- chart ----------
+const canvas=$('chart'); const ctx=canvas.getContext('2d');
+function draw(res){
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  const cssW=canvas.clientWidth||600, cssH=Math.max(220,Math.round(cssW*0.48));
+  canvas.width=cssW*dpr; canvas.height=cssH*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,cssW,cssH);
+
+  const padL=10,padR=10,padT=12,padB=28;
+  const x0=padL, x1=cssW-padR, y0=cssH-padB, y1=padT;
+  // domain: fit to data, clamp to a sensible window
+  const span=Math.max(4, 3.3*S.sigma); let lo=res.center-span, hi=res.center+span;
+  lo=Math.max(40,Math.floor(lo)); hi=Math.min(60,Math.ceil(hi));
+  if(hi-lo<8){const c=(hi+lo)/2;lo=c-4;hi=c+4;}
+  const X=v=>x0+(v-lo)/(hi-lo)*(x1-x0);
+
+  // histogram
+  const BINS=64; const counts=new Float64Array(BINS); const bw=(hi-lo)/BINS;
+  for(let i=0;i<N;i++){const b=Math.floor((res.sorted[i]-lo)/bw);if(b>=0&&b<BINS)counts[b]++;}
+  // smooth a touch (moving avg)
+  const sm=new Float64Array(BINS);
+  for(let b=0;b<BINS;b++){let s=0,c=0;for(let k=-1;k<=1;k++){const j=b+k;if(j>=0&&j<BINS){s+=counts[j];c++;}}sm[b]=s/c;}
+  const maxC=Math.max(...sm)||1;
+  const Y=c=>y0-(c/maxC)*(y0-y1);
+
+  const colF=cssv('--flavio'), colL=cssv('--lula'), line=cssv('--line'),
+        muted=cssv('--muted'), faint=cssv('--faint');
+
+  // gridlines + x ticks (integers)
+  ctx.font='11px "IBM Plex Mono",monospace'; ctx.textAlign='center'; ctx.textBaseline='top';
+  for(let v=Math.ceil(lo/2)*2; v<=hi; v+=2){
+    const xx=X(v);
+    ctx.strokeStyle=line; ctx.lineWidth=1; ctx.globalAlpha=v===50?0:.5;
+    ctx.beginPath();ctx.moveTo(xx,y1);ctx.lineTo(xx,y0);ctx.stroke();
+    ctx.globalAlpha=1; ctx.fillStyle=faint;
+    ctx.fillText(v+'%', xx, y0+6);
+  }
+
+  // area fill split at 50
+  function area(fromV,toV,color){
+    ctx.beginPath(); ctx.moveTo(X(fromV),y0);
+    for(let b=0;b<BINS;b++){
+      const cv=lo+(b+0.5)*bw; if(cv<fromV||cv>toV)continue;
+      ctx.lineTo(X(cv),Y(sm[b]));
+    }
+    ctx.lineTo(X(toV),y0); ctx.closePath();
+    ctx.fillStyle=color; ctx.globalAlpha=.9; ctx.fill(); ctx.globalAlpha=1;
+  }
+  // clip-ish: draw full curve regions
+  area(lo,50,hexA(colL,.78));
+  area(50,hi,hexA(colF,.82));
+
+  // outline
+  ctx.beginPath();
+  for(let b=0;b<BINS;b++){const cv=lo+(b+0.5)*bw;const xx=X(cv),yy=Y(sm[b]);b===0?ctx.moveTo(xx,yy):ctx.lineTo(xx,yy);}
+  ctx.strokeStyle=hexA(cssv('--fg'),.35);ctx.lineWidth=1.5;ctx.stroke();
+
+  // 50% line
+  ctx.strokeStyle=cssv('--fg');ctx.lineWidth=2;ctx.setLineDash([4,4]);
+  ctx.beginPath();ctx.moveTo(X(50),y1-2);ctx.lineTo(X(50),y0);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle=cssv('--fg');ctx.textAlign='center';ctx.font='600 11px "IBM Plex Mono",monospace';
+  ctx.fillText('50%',X(50),y1-2);
+
+  // median marker
+  const mx=X(res.median);
+  ctx.strokeStyle=muted;ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(mx,y0);ctx.lineTo(mx,Y(sm[Math.min(BINS-1,Math.max(0,Math.floor((res.median-lo)/bw)))]));ctx.stroke();
+}
+function hexA(hex,a){
+  hex=hex.replace('#','');
+  if(hex.length===3)hex=hex.split('').map(c=>c+c).join('');
+  const r=parseInt(hex.slice(0,2),16),g=parseInt(hex.slice(2,4),16),b=parseInt(hex.slice(4,6),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+// ---------- render ----------
+function render(){
+  const agg=aggregate();
+  const body=$('pollBody'); body.innerHTML='';
+  const wmap={}; let wmax=0;
+  if(agg){agg.list.forEach((p,i)=>{wmap[p.id]=agg.w[i];wmax=Math.max(wmax,agg.w[i]);});}
+  POLLS.forEach(p=>{
+    const active=isActive(p);
+    const tr=document.createElement('tr'); if(!active)tr.className='off';
+    const wpct=active&&wmax? Math.round(wmap[p.id]/wmax*100):0;
+    const tags=(p.groupA?'<span class="tag">A</span>':'');
+    tr.innerHTML=`
+      <td><label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" ${p.on?'checked':''} data-poll="${p.id}">
+        <span class="pollname">${p.name}</span>${tags}</label></td>
+      <td class="num">${p.field}</td>
+      <td class="num">${p.released}</td>
+      <td class="num">${p.n.toLocaleString()}</td>
+      <td class="num" style="color:var(--lula)">${fmt1(p.lula)}</td>
+      <td class="num" style="color:var(--flavio)">${fmt1(p.flavio)}</td>
+      <td class="num"><span class="tcell">${active?Math.round(wmap[p.id]/agg.W*100)+'%':'—'}<span class="wbar" style="width:${wpct*0.5}px"></span></span></td>`;
+    body.appendChild(tr);
+  });
+  body.querySelectorAll('input[data-poll]').forEach(cb=>cb.addEventListener('change',e=>{
+    POLLS.find(p=>p.id===e.target.dataset.poll).on=e.target.checked; render();
+  }));
+
+  if(!agg){
+    $('probL').textContent='—';$('probF').textContent='—';
+    $('fav').textContent='Select at least one poll.';
+    ctx.clearRect(0,0,canvas.clientWidth,canvas.height); return;
+  }
+  const res=simulate(agg);
+  const pF=Math.round(res.pF*100), pL=100-pF;
+  $('probL').textContent=pL+'%'; $('probF').textContent=pF+'%';
+  $('segL').style.width=res.pL*100+'%'; $('segF').style.width=res.pF*100+'%';
+
+  const leader = res.pF>=res.pL?'Flávio':'Lula';
+  const lead = Math.max(pF,pL);
+  let verdict;
+  if(Math.abs(pF-50)<=6) verdict=`A coin-flip. <b>${leader}</b> is a marginal favorite at ${lead}%, well inside the uncertainty.`;
+  else if(lead<65) verdict=`<b>${leader}</b> is a slight favorite (${lead}%), but the outcome is far from settled.`;
+  else if(lead<80) verdict=`<b>${leader}</b> is favored at ${lead}% under these assumptions.`;
+  else verdict=`<b>${leader}</b> is a strong favorite (${lead}%) under these assumptions.`;
+  $('fav').innerHTML=verdict+` <span class="chip">central: Flávio ${fmt1(res.center)}%</span>`;
+
+  $('sCentral').innerHTML=`<span style="color:var(--flavio)">${fmt1(res.center)}</span> <small>Flávio</small> · <span style="color:var(--lula)">${fmt1(100-res.center)}</span> <small>Lula</small>`;
+  $('sRange').innerHTML=`${fmt1(res.p10)}–${fmt1(res.p90)}<small> %</small>`;
+  const mg=res.center-50; const mgWho=mg>=0?'Flávio':'Lula';
+  const mgcol=mg>=0?'--flavio':'--lula';
+  $('sMargin').innerHTML=`<span style="color:var(${mgcol})">${mg>=0?'+':''}${fmt1(mg*2)}</span> <small>${mgWho}</small>`;
+
+  draw(res);
+}
+
+// ---------- controls wiring ----------
+function syncInputs(){
+  $('sigma').value=S.sigma; $('bias').value=S.bias; $('hl').value=S.hl;
+  $('qweight').checked=S.qweight; $('nweight').checked=S.nweight;
+  $('latestOnly').checked=S.latestOnly; $('incOld').checked=S.incOld;
+  $('sigmaV').textContent='±'+fmt1(S.sigma)+' pts';
+  $('biasV').textContent=(S.bias>0?'+':'')+fmt1(S.bias)+' pts'+(S.bias>0?' →Flávio':S.bias<0?' →Lula':'');
+  $('hlV').textContent=fmt1(S.hl)+' days';
+}
+function bindRange(id,key){
+  $(id).addEventListener('input',e=>{S[key]=parseFloat(e.target.value);syncInputs();render();});
+}
+bindRange('sigma','sigma');bindRange('bias','bias');bindRange('hl','hl');
+['qweight','nweight','latestOnly','incOld'].forEach(k=>{
+  $(k).addEventListener('change',e=>{S[k]=e.target.checked;render();});
+});
+$('presets').addEventListener('click',e=>{
+  const p=e.target.dataset.preset; if(!p)return;
+  S={...PRESETS[p]}; syncInputs(); render();
+});
+$('reset').addEventListener('click',()=>{S={...BASE};syncInputs();render();});
+
+let rt; window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{const a=aggregate();if(a)draw(simulate(a));},150);});
+const mq=window.matchMedia('(prefers-color-scheme:dark)');
+mq.addEventListener&&mq.addEventListener('change',()=>{const a=aggregate();if(a)draw(simulate(a));});
+
+async function boot(){
+  try{
+    const r = await fetch('polls.json',{cache:'no-store'});
+    if(!r.ok) throw new Error(r.status);
+    POLLS = (await r.json()).map(p=>({...p, released:fmtDate(p.released), lula:+(100-p.flavio).toFixed(1), on:true}));
+  }catch(e){
+    document.getElementById('fav').textContent='Could not load polls.json. Run scripts/build_dashboard_data.py and serve the public/ folder over HTTP.';
+    return;
+  }
+  const last = POLLS.reduce((a,p)=>p.days<a.days?p:a, POLLS[0]);
+  document.getElementById('asof').textContent = `${POLLS.length} polls · latest released ${last.released}`;
+  syncInputs(); render();
+}
+boot();
+</script>
+</body>
+</html>

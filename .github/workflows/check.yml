@@ -1,0 +1,19 @@
+name: Check data
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Model runs on the committed data
+        run: python model/simulate.py --seed 1
+      - name: public/polls.json matches data/polls.csv
+        run: |
+          python scripts/build_dashboard_data.py
+          git diff --exit-code public/polls.json || (echo "Run: python scripts/build_dashboard_data.py and commit public/polls.json" && exit 1)

@@ -1,0 +1,182 @@
+[
+  {
+    "id": "df1",
+    "name": "Datafolha",
+    "field": "Oct 6-7",
+    "released": "2026-10-08",
+    "days": 17,
+    "n": 2520,
+    "flavio": 52.0,
+    "groupA": true
+  },
+  {
+    "id": "at1",
+    "name": "AtlasIntel",
+    "field": "Oct 3-8",
+    "released": "2026-10-09",
+    "days": 16,
+    "n": 5026,
+    "flavio": 52.8,
+    "groupA": true
+  },
+  {
+    "id": "pd1",
+    "name": "PoderData/Aya",
+    "field": "—",
+    "released": "2026-10-13",
+    "days": 12,
+    "n": 4000,
+    "flavio": 51.0,
+    "groupA": false
+  },
+  {
+    "id": "qu1",
+    "name": "Quaest",
+    "field": "Oct 10-13",
+    "released": "2026-10-14",
+    "days": 11,
+    "n": 2154,
+    "flavio": 51.1,
+    "groupA": true
+  },
+  {
+    "id": "ip1",
+    "name": "Ipespe/Abrapel",
+    "field": "—",
+    "released": "2026-10-17",
+    "days": 8,
+    "n": 1500,
+    "flavio": 51.2,
+    "groupA": false
+  },
+  {
+    "id": "at2",
+    "name": "AtlasIntel",
+    "field": "Oct 13-18",
+    "released": "2026-10-19",
+    "days": 6,
+    "n": 4998,
+    "flavio": 51.1,
+    "groupA": true
+  },
+  {
+    "id": "rt1",
+    "name": "Real Time Big Data",
+    "field": "Oct 15-19",
+    "released": "2026-10-20",
+    "days": 5,
+    "n": 2000,
+    "flavio": 52.0,
+    "groupA": true
+  },
+  {
+    "id": "qu2",
+    "name": "Quaest",
+    "field": "Oct 17-20",
+    "released": "2026-10-21",
+    "days": 4,
+    "n": 2154,
+    "flavio": 50.6,
+    "groupA": true
+  },
+  {
+    "id": "ge1",
+    "name": "Gerp",
+    "field": "Oct 19-21",
+    "released": "2026-10-21",
+    "days": 4,
+    "n": 2400,
+    "flavio": 53.0,
+    "groupA": false
+  },
+  {
+    "id": "df2",
+    "name": "Datafolha",
+    "field": "Oct 20-22",
+    "released": "2026-10-22",
+    "days": 3,
+    "n": 2154,
+    "flavio": 50.0,
+    "groupA": true
+  },
+  {
+    "id": "pd2",
+    "name": "PoderData/Aya",
+    "field": "Oct 19-22",
+    "released": "2026-10-22",
+    "days": 3,
+    "n": 4000,
+    "flavio": 51.0,
+    "groupA": false
+  },
+  {
+    "id": "ix1",
+    "name": "Indexa/Broadcast",
+    "field": "—",
+    "released": "2026-10-22",
+    "days": 3,
+    "n": 2000,
+    "flavio": 50.6,
+    "groupA": false
+  },
+  {
+    "id": "vx1",
+    "name": "Vox Brasil",
+    "field": "Oct 20-22",
+    "released": "2026-10-22",
+    "days": 3,
+    "n": 2100,
+    "flavio": 49.4,
+    "groupA": false
+  },
+  {
+    "id": "rt2",
+    "name": "Real Time Big Data",
+    "field": "Oct 19-22",
+    "released": "2026-10-23",
+    "days": 2,
+    "n": 2000,
+    "flavio": 52.0,
+    "groupA": true
+  },
+  {
+    "id": "ve1",
+    "name": "Veritá",
+    "field": "Oct 18-22",
+    "released": "2026-10-23",
+    "days": 2,
+    "n": 15554,
+    "flavio": 51.3,
+    "groupA": false
+  },
+  {
+    "id": "al1",
+    "name": "Alfa Inteligência",
+    "field": "Oct 18-22",
+    "released": "2026-10-23",
+    "days": 2,
+    "n": 2700,
+    "flavio": 52.0,
+    "groupA": false
+  },
+  {
+    "id": "ip2",
+    "name": "Ipespe/Abrapel",
+    "field": "Oct 20-22",
+    "released": "2026-10-23",
+    "days": 2,
+    "n": 1500,
+    "flavio": 50.5,
+    "groupA": false
+  },
+  {
+    "id": "md1",
+    "name": "CNT/MDA",
+    "field": "Oct 21-23",
+    "released": "2026-10-24",
+    "days": 1,
+    "n": 2032,
+    "flavio": 50.7,
+    "groupA": true
+  }
+]

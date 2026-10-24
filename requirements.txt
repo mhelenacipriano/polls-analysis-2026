@@ -1,0 +1,2 @@
+# Only the scraper needs this. The model and the build script use the standard library.
+playwright>=1.44
