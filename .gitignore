@@ -4,3 +4,4 @@ __pycache__/
 .vercel/
 data/pdfs/
 .DS_Store
+data/debug_results.html
