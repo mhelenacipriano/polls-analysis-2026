@@ -128,8 +128,10 @@ body{margin:0;font-size:14px}
   .polls h2{font-size:15px;padding:0 4px}
   .polls .note{font-size:12.5px;color:var(--muted);padding:3px 4px 12px}
   .tbl-scroll{overflow-x:auto}
-  table{border-collapse:collapse;width:100%;font-size:13px;min-width:600px}
-  th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+  table{border-collapse:collapse;width:100%;font-size:13px;min-width:780px}
+  .polls a{color:var(--flavio);text-decoration:none}
+  .polls a:hover{text-decoration:underline}
+  th,td{padding:8px 7px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
   th{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);
     font-weight:500;text-align:right}
   th:first-child,td:first-child{text-align:left}
@@ -246,10 +248,10 @@ body{margin:0;font-size:14px}
 
   <section class="card polls">
     <h2>Polls in the model</h2>
-    <p class="note">Valid-vote two-way share (blank, null and undecided excluded). Uncheck any poll to drop it. Bars show each poll's current weight.</p>
+    <p class="note">Valid-vote two-way share (blank, null and undecided excluded). Uncheck any poll to drop it. Bars show each poll's current weight. Source links go to the report each number was taken from; look up a registration number in the TSE's <a href="https://pesqele-divulgacao.tse.jus.br/app/pesquisa/listar.xhtml" target="_blank" rel="noopener">PesqEle</a> ("Número de identificação") — it holds the method, not the results.</p>
     <div class="tbl-scroll">
       <table>
-        <thead><tr><th>Pollster</th><th>Fieldwork</th><th>Released</th><th>Sample</th><th>Lula</th><th>Flávio</th><th>Weight</th></tr></thead>
+        <thead><tr><th>Pollster</th><th>Fieldwork</th><th>Released</th><th>Sample</th><th>Lula</th><th>Flávio</th><th>Weight</th><th>TSE reg.</th><th>Source</th></tr></thead>
         <tbody id="pollBody"></tbody>
       </table>
     </div>
@@ -440,6 +442,12 @@ function hexA(hex,a){
 }
 
 // ---------- render ----------
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function srcLink(url){
+  let u; try{ u=new URL(url); }catch(e){ return '—'; }
+  if(u.protocol!=='https:'&&u.protocol!=='http:') return '—';
+  return `<a href="${esc(u.href)}" target="_blank" rel="noopener" title="${esc(u.hostname.replace(/^www\./,''))}">link ↗</a>`;
+}
 function render(){
   const agg=aggregate();
   const body=$('pollBody'); body.innerHTML='';
@@ -459,7 +467,9 @@ function render(){
       <td class="num">${p.n.toLocaleString()}</td>
       <td class="num" style="color:var(--lula)">${fmt1(p.lula)}</td>
       <td class="num" style="color:var(--flavio)">${fmt1(p.flavio)}</td>
-      <td class="num"><span class="tcell">${active?Math.round(wmap[p.id]/agg.W*100)+'%':'—'}<span class="wbar" style="width:${wpct*0.5}px"></span></span></td>`;
+      <td class="num"><span class="tcell">${active?Math.round(wmap[p.id]/agg.W*100)+'%':'—'}<span class="wbar" style="width:${wpct*0.5}px"></span></span></td>
+      <td class="num">${p.reg?esc(p.reg):'—'}</td>
+      <td>${srcLink(p.src)}</td>`;
     body.appendChild(tr);
   });
   body.querySelectorAll('input[data-poll]').forEach(cb=>cb.addEventListener('change',e=>{

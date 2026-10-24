@@ -43,6 +43,8 @@ def load_polls(path):
                 "n": int(row["sample_size"] or 2000),
                 "flavio": float(row["flavio_valid"]),
                 "group_a": row.get("group_a", "0") == "1",
+                "registration": row.get("tse_registration", ""),
+                "source": row.get("source", ""),
             })
     return polls
 

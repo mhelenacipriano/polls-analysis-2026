@@ -7,7 +7,9 @@
     "days": 17,
     "n": 2520,
     "flavio": 52.0,
-    "groupA": true
+    "groupA": true,
+    "reg": "BR-0949/2026",
+    "src": "https://www.cnnbrasil.com.br/eleicoes/datafolha-flavio-tem-52-dos-votos-validos-lula-48/"
   },
   {
     "id": "at1",
@@ -17,7 +19,9 @@
     "days": 16,
     "n": 5026,
     "flavio": 52.8,
-    "groupA": true
+    "groupA": true,
+    "reg": "BR-03663/2026",
+    "src": "https://www.cnnbrasil.com.br/eleicoes/atlas-flavio-tem-528-dos-votos-validos-no-2o-turno-lula-472/"
   },
   {
     "id": "pd1",
@@ -27,7 +31,9 @@
     "days": 12,
     "n": 3000,
     "flavio": 51.0,
-    "groupA": false
+    "groupA": false,
+    "reg": "BR-01209/2026",
+    "src": "https://sbtnews.sbt.com.br/noticia/eleicoes/poder-data-aya-flavio-tem-51-e-lula-49-no-segundo-turno"
   },
   {
     "id": "nx1",
@@ -37,7 +43,9 @@
     "days": 12,
     "n": 2002,
     "flavio": 52.0,
-    "groupA": false
+    "groupA": false,
+    "reg": "BR-07997/2026",
+    "src": "https://sbtnews.sbt.com.br/noticia/eleicoes/btg-nexus-flavio-tem-48-e-lula-45-no-2-turno"
   },
   {
     "id": "qu1",
@@ -47,7 +55,9 @@
     "days": 11,
     "n": 2154,
     "flavio": 51.1,
-    "groupA": true
+    "groupA": true,
+    "reg": "BR-08729/2026",
+    "src": "https://www.poder360.com.br/poder-eleicoes-2026/flavio-tem-46-e-lula-tem-44-no-2o-turno-diz-quaest/"
   },
   {
     "id": "ip1",
@@ -57,7 +67,9 @@
     "days": 8,
     "n": 1500,
     "flavio": 51.2,
-    "groupA": false
+    "groupA": false,
+    "reg": "",
+    "src": "https://www.metropoles.com/brasil/ipespe-flavio-tem-505-e-lula-marca-495-dos-votos-validos-no-2o-turno"
   },
   {
     "id": "at2",
@@ -67,7 +79,9 @@
     "days": 6,
     "n": 4998,
     "flavio": 51.1,
-    "groupA": true
+    "groupA": true,
+    "reg": "BR-02418/2026",
+    "src": "https://sbtnews.sbt.com.br/noticia/eleicoes/atlas-bloomberg-flavio-tem-51-1-e-lula-48-9-dos-validos"
   },
   {
     "id": "nx2",
@@ -77,7 +91,9 @@
     "days": 6,
     "n": 2002,
     "flavio": 50.3,
-    "groupA": false
+    "groupA": false,
+    "reg": "BR-04499/2026",
+    "src": "https://midiamax.com.br/brasil/2026/flavio-bolsonaro-tem-503-votos-validos-contra-497-lula-aponta-btg-nexus/"
   },
   {
     "id": "rt1",
@@ -87,7 +103,9 @@
     "days": 5,
     "n": 2000,
     "flavio": 52.0,
-    "groupA": true
+    "groupA": true,
+    "reg": "BR-02952/2026",
+    "src": "https://www.gazetadopovo.com.br/eleicoes/2026/pesquisa-eleitoral-2026/real-time-big-data-presidente-outubro-2026-segundo-turno/"
   },
   {
     "id": "qu2",
@@ -97,7 +115,9 @@
     "days": 4,
     "n": 2154,
     "flavio": 50.6,
-    "groupA": true
+    "groupA": true,
+    "reg": "BR-08535/2026",
+    "src": "https://www.gazetadopovo.com.br/eleicoes/2026/pesquisa-eleitoral-2026/quaest-presidente-outubro-2026-segundo-turno-2/"
   },
   {
     "id": "ge1",
@@ -107,7 +127,9 @@
     "days": 4,
     "n": 2400,
     "flavio": 53.0,
-    "groupA": false
+    "groupA": false,
+    "reg": "BR-03835/2026",
+    "src": "https://www.gazetadopovo.com.br/eleicoes/2026/pesquisa-eleitoral-2026/gerp-presidente-outubro-2026-segundo-turno-3/"
   },
   {
     "id": "df2",
@@ -117,7 +139,9 @@
     "days": 3,
     "n": 2154,
     "flavio": 50.0,
-    "groupA": true
+    "groupA": true,
+    "reg": "BR-09709/2026",
+    "src": "https://www.gazetadopovo.com.br/eleicoes/2026/pesquisa-eleitoral-2026/datafolha-presidente-outubro-2026-segundo-turno-3/"
   },
   {
     "id": "pd2",
@@ -127,7 +151,9 @@
     "days": 3,
     "n": 4000,
     "flavio": 51.0,
-    "groupA": false
+    "groupA": false,
+    "reg": "BR-07926/2026",
+    "src": "https://www.gazetadopovo.com.br/eleicoes/2026/pesquisa-eleitoral-2026/poderdata-presidente-outubro-2026-segundo-turno-5/"
   },
   {
     "id": "ix1",
@@ -137,7 +163,9 @@
     "days": 3,
     "n": 2000,
     "flavio": 50.6,
-    "groupA": false
+    "groupA": false,
+    "reg": "BR-02348/2026",
+    "src": "https://www.gazetadopovo.com.br/eleicoes/2026/pesquisa-eleitoral-2026/indexa-broadcast-presidente-outubro-2026-segundo-turno-2/"
   },
   {
     "id": "vx1",
@@ -147,7 +175,9 @@
     "days": 3,
     "n": 2100,
     "flavio": 49.4,
-    "groupA": false
+    "groupA": false,
+    "reg": "BR-03259/2026",
+    "src": "https://www.cnnbrasil.com.br/eleicoes/vox-lula-tem-506-dos-votos-validos-no-2o-turno-flavio-494/"
   },
   {
     "id": "rt2",
@@ -157,7 +187,9 @@
     "days": 2,
     "n": 2000,
     "flavio": 52.0,
-    "groupA": true
+    "groupA": true,
+    "reg": "BR-09670/2026",
+    "src": "https://www.gazetadopovo.com.br/eleicoes/2026/pesquisa-eleitoral-2026/real-time-big-data-presidente-outubro-2026-segundo-turno-2/"
   },
   {
     "id": "ve1",
@@ -167,7 +199,9 @@
     "days": 2,
     "n": 15554,
     "flavio": 51.3,
-    "groupA": false
+    "groupA": false,
+    "reg": "BR-06070/2026",
+    "src": "https://transmissaopolitica.com.br/politica-nacional/2026/10/23/pesquisa-verita-flavio-lula-23-outubro/"
   },
   {
     "id": "al1",
@@ -177,7 +211,9 @@
     "days": 2,
     "n": 2700,
     "flavio": 52.0,
-    "groupA": false
+    "groupA": false,
+    "reg": "BR-08496/2026",
+    "src": "https://www.cnnbrasil.com.br/eleicoes/alfa-flavio-tem-52-dos-votos-validos-no-2o-turno-lula-48/"
   },
   {
     "id": "ip2",
@@ -187,7 +223,9 @@
     "days": 2,
     "n": 1500,
     "flavio": 50.5,
-    "groupA": false
+    "groupA": false,
+    "reg": "BR-04350/2026",
+    "src": "https://www.metropoles.com/brasil/ipespe-flavio-tem-505-e-lula-marca-495-dos-votos-validos-no-2o-turno"
   },
   {
     "id": "md1",
@@ -197,6 +235,8 @@
     "days": 1,
     "n": 2032,
     "flavio": 50.7,
-    "groupA": true
+    "groupA": true,
+    "reg": "BR-02136/2026",
+    "src": "https://forbes.com.br/geral/2026/10/flavio-tem-463-e-lula-soma-45-na-vespera-do-2o-turno-aponta-pesquisa-cnt-mda/"
   }
 ]
