@@ -14,6 +14,7 @@ Run it on your own machine. The TSE may block cloud and datacenter IPs.
   pip install -r requirements.txt && playwright install chromium
   python scraper/tse_pesqele.py --from 05/10/2026 --to 25/10/2026 --headed
   python scraper/tse_pesqele.py --pdfs        # also download each registration's documents
+  python scraper/tse_pesqele.py --pollster quaest --pollster datafolha --pollster vox
 
 Output: data/registrations.csv (and data/pdfs/<registration>/ with --pdfs).
 
@@ -25,6 +26,7 @@ import argparse
 import csv
 import re
 import time
+import unicodedata
 from pathlib import Path
 
 from playwright.sync_api import TimeoutError as PWTimeout
@@ -74,6 +76,11 @@ def fill_date(page, selector, value):
     page.keyboard.press("Tab")
 
 
+def norm(text):
+    """Lowercase and strip accents so 'Veritá' matches 'verita'."""
+    return unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode().lower()
+
+
 def parse_detail(text):
     """Pull structured fields out of a registration's detail panel text."""
     def grab(pattern):
@@ -94,7 +101,7 @@ def parse_detail(text):
     }
 
 
-def scrape(date_from, date_to, headed=False, pause=False, pdfs=False):
+def scrape(date_from, date_to, headed=False, pause=False, pdfs=False, pollsters=()):
     out_csv = ROOT / "data" / "registrations.csv"
     pdf_dir = ROOT / "data" / "pdfs"
     records = []
@@ -126,6 +133,8 @@ def scrape(date_from, date_to, headed=False, pause=False, pdfs=False):
             for i in range(count):
                 row = rows.nth(i)
                 summary = re.sub(r"\s+", " ", row.inner_text()).strip()
+                if pollsters and not any(norm(p) in norm(summary) for p in pollsters):
+                    continue  # not a requested pollster: don't open its details
                 rec = {"row_text": summary}
                 try:
                     row.locator(SELECTORS["detail_button"]).first.click()
@@ -177,6 +186,8 @@ if __name__ == "__main__":
     ap.add_argument("--to", dest="date_to", default="25/10/2026", help="registration period end, DD/MM/YYYY")
     ap.add_argument("--headed", action="store_true", help="show the browser window")
     ap.add_argument("--pause", action="store_true", help="open the Playwright inspector after the page loads")
+    ap.add_argument("--pollster", action="append", default=[],
+                    help="only fetch rows whose text contains this name (repeatable), e.g. --pollster quaest")
     ap.add_argument("--pdfs", action="store_true", help="download each registration's documents")
     a = ap.parse_args()
-    scrape(a.date_from, a.date_to, a.headed, a.pause, a.pdfs)
+    scrape(a.date_from, a.date_to, a.headed, a.pause, a.pdfs, a.pollster)
