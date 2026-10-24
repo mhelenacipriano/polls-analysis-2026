@@ -23,7 +23,6 @@ look wrong, send me its first rows.
 """
 import argparse
 import csv
-import json
 import re
 import time
 import unicodedata
@@ -84,7 +83,9 @@ def pick_menu(page, menu_id, label):
     page.locator(f"[id='{menu_id}'] .ui-selectonemenu-trigger").click()
     panel = page.locator(f"[id='{menu_id}_panel']")
     panel.wait_for(state="visible")
-    panel.locator(f"li[data-label={json.dumps(label)}]").first.click()
+    # Match on visible text with a regex: no CSS-string escaping, so accents/apostrophes are safe.
+    option = panel.locator("li.ui-selectonemenu-item").filter(has_text=re.compile(rf"^\s*{re.escape(label)}\s*$"))
+    option.first.click()
     settle(page)
 
 
