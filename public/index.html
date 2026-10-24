@@ -128,6 +128,14 @@ body{margin:0;font-size:14px}
   .polls h2{font-size:15px;padding:0 4px}
   .polls .note{font-size:12.5px;color:var(--muted);padding:3px 4px 12px}
   .tbl-scroll{overflow-x:auto}
+  .ptools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:0 4px 12px}
+  #pollSearch{flex:1 1 220px;min-width:0;font:inherit;font-size:13px;padding:7px 11px;border-radius:999px;
+    border:1px solid var(--line);background:var(--surface-2);color:var(--fg)}
+  #pollSearch::placeholder{color:var(--faint)}
+  .ptools .preset{margin:0}
+  .preset:disabled{opacity:.45;cursor:default}
+  .pcount{font-size:11.5px;color:var(--faint);font-family:var(--font-mono);flex:1 0 100%;padding-left:2px}
+  .noresult{padding:14px 4px;font-size:13px;color:var(--muted)}
   table{border-collapse:collapse;width:100%;font-size:13px;min-width:780px}
   .polls a{color:var(--flavio);text-decoration:none}
   .polls a:hover{text-decoration:underline}
@@ -250,6 +258,12 @@ body{margin:0;font-size:14px}
   <section class="card polls">
     <h2>Polls in the model</h2>
     <p class="note">Valid-vote two-way share (blank, null and undecided excluded). Uncheck any poll to drop it. Bars show each poll's current weight; dimmed rows are out of the model, and the weight column says why (e.g. "replaced": an older wave from a pollster with a newer poll — untick "Latest poll per pollster only" to count it). Source links go to the report each number was taken from; look up a registration number in the TSE's <a href="https://pesqele-divulgacao.tse.jus.br/app/pesquisa/listar.xhtml" target="_blank" rel="noopener">PesqEle</a> ("Número de identificação") — it holds the method, not the results.</p>
+    <div class="ptools">
+      <input type="search" id="pollSearch" placeholder="Search pollster, date, registration, source…" aria-label="Search polls" autocomplete="off">
+      <button type="button" class="preset" id="selAll">Select all</button>
+      <button type="button" class="preset" id="selNone">Unselect all</button>
+      <span class="pcount" id="pollCount" aria-live="polite"></span>
+    </div>
     <div class="tbl-scroll">
       <table>
         <thead><tr><th>Pollster</th><th>Fieldwork</th><th>Released</th><th>Sample</th><th>Lula</th><th>Flávio</th><th>Weight</th><th>TSE reg.</th><th>Source</th></tr></thead>
@@ -462,7 +476,7 @@ function render(){
   if(agg){agg.list.forEach((p,i)=>{wmap[p.id]=agg.w[i];wmax=Math.max(wmax,agg.w[i]);});}
   POLLS.forEach(p=>{
     const active=isActive(p);
-    const tr=document.createElement('tr'); if(!active)tr.className='off';
+    const tr=document.createElement('tr'); tr.dataset.id=p.id; if(!active)tr.className='off';
     const wpct=active&&wmax? Math.round(wmap[p.id]/wmax*100):0;
     const tags=(p.groupA?'<span class="tag">A</span>':'');
     tr.innerHTML=`
@@ -482,11 +496,14 @@ function render(){
   body.querySelectorAll('input[data-poll]').forEach(cb=>cb.addEventListener('change',e=>{
     POLLS.find(p=>p.id===e.target.dataset.poll).on=e.target.checked; render();
   }));
+  applyFilter();
 
   if(!agg){
     $('probL').textContent='—';$('probF').textContent='—';
-    $('fav').textContent='Select at least one poll.';
-    ctx.clearRect(0,0,canvas.clientWidth,canvas.height); return;
+    $('segL').style.width='0'; $('segF').style.width='0';
+    ['sCentral','sRange','sMargin'].forEach(id=>$(id).textContent='—');
+    $('fav').textContent='No polls selected. Tick at least one poll in the table below.';
+    ctx.clearRect(0,0,canvas.width,canvas.height); return;
   }
   const res=simulate(agg);
   const pF=Math.round(res.pF*100), pL=100-pF;
@@ -510,6 +527,32 @@ function render(){
 
   draw(res);
 }
+
+// ---------- poll search + bulk select ----------
+const fold=s=>String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const query=()=>fold($('pollSearch').value.trim());
+const matches=(p,q)=>!q || fold([p.name,p.field,p.released,p.reg,p.src].join(' ')).includes(q);
+function applyFilter(){
+  const q=query(); let shown=0;
+  $('pollBody').querySelectorAll('tr[data-id]').forEach(tr=>{
+    const ok=matches(POLLS.find(p=>p.id===tr.dataset.id),q); tr.hidden=!ok; if(ok) shown++;
+  });
+  const old=$('pollBody').querySelector('.noresult-row'); if(old) old.remove();
+  if(q && !shown){
+    const tr=document.createElement('tr'); tr.className='noresult-row';
+    tr.innerHTML='<td colspan="9" class="noresult" style="text-align:left">No polls match this search.</td>';
+    $('pollBody').appendChild(tr);
+  }
+  const on=POLLS.filter(p=>p.on).length;
+  $('pollCount').textContent=`${on} of ${POLLS.length} polls selected`+(q?` · ${shown} shown`:'');
+  $('selAll').textContent=q?'Select shown':'Select all';
+  $('selNone').textContent=q?'Unselect shown':'Unselect all';
+  $('selAll').disabled=$('selNone').disabled=(q && !shown);
+}
+function setShown(on){ const q=query(); POLLS.forEach(p=>{ if(matches(p,q)) p.on=on; }); render(); }
+$('pollSearch').addEventListener('input',applyFilter);
+$('selAll').addEventListener('click',()=>setShown(true));
+$('selNone').addEventListener('click',()=>setShown(false));
 
 // ---------- controls wiring ----------
 function syncInputs(){
