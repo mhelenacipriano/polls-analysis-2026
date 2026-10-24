@@ -136,6 +136,15 @@ body{margin:0;font-size:14px}
   .preset:disabled{opacity:.45;cursor:default}
   .pcount{font-size:11.5px;color:var(--faint);font-family:var(--font-mono);flex:1 0 100%;padding-left:2px}
   .noresult{padding:14px 4px;font-size:13px;color:var(--muted)}
+  .insts{flex:1 0 100%;border:0;margin:2px 0 0;padding:0;min-width:0}
+  .insts legend{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);padding:0 0 6px 2px}
+  #instList{display:flex;flex-wrap:wrap;gap:6px}
+  .inst{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:5px 10px 5px 8px;border-radius:999px;
+    border:1px solid var(--line);background:var(--surface-2);cursor:pointer;user-select:none}
+  .inst:hover{border-color:var(--muted)}
+  .inst input{width:14px;height:14px;margin:0}
+  .inst .n{font-family:var(--font-mono);font-size:10.5px;color:var(--faint)}
+  .inst.none{color:var(--muted)}
   table{border-collapse:collapse;width:100%;font-size:13px;min-width:780px}
   .polls a{color:var(--flavio);text-decoration:none}
   .polls a:hover{text-decoration:underline}
@@ -257,12 +266,13 @@ body{margin:0;font-size:14px}
 
   <section class="card polls">
     <h2>Polls in the model</h2>
-    <p class="note">Valid-vote two-way share (blank, null and undecided excluded). Uncheck any poll to drop it. Bars show each poll's current weight; dimmed rows are out of the model, and the weight column says why (e.g. "replaced": an older wave from a pollster with a newer poll — untick "Latest poll per pollster only" to count it). Source links go to the report each number was taken from; look up a registration number in the TSE's <a href="https://pesqele-divulgacao.tse.jus.br/app/pesquisa/listar.xhtml" target="_blank" rel="noopener">PesqEle</a> ("Número de identificação") — it holds the method, not the results.</p>
+    <p class="note">Valid-vote two-way share (blank, null and undecided excluded). Uncheck any poll, or a whole institute, to drop it. Bars show each poll's current weight; dimmed rows are out of the model, and the weight column says why (e.g. "replaced": an older wave from a pollster with a newer poll — untick "Latest poll per pollster only" to count it). Source links go to the report each number was taken from; look up a registration number in the TSE's <a href="https://pesqele-divulgacao.tse.jus.br/app/pesquisa/listar.xhtml" target="_blank" rel="noopener">PesqEle</a> ("Número de identificação") — it holds the method, not the results.</p>
     <div class="ptools">
       <input type="search" id="pollSearch" placeholder="Search pollster, date, registration, source…" aria-label="Search polls" autocomplete="off">
       <button type="button" class="preset" id="selAll">Select all</button>
       <button type="button" class="preset" id="selNone">Unselect all</button>
       <span class="pcount" id="pollCount" aria-live="polite"></span>
+      <fieldset class="insts"><legend>Institutes</legend><div id="instList"></div></fieldset>
     </div>
     <div class="tbl-scroll">
       <table>
@@ -323,10 +333,9 @@ const cssv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).tri
 // ---------- aggregation ----------
 function isActive(p){
   if(!p.on) return false;
-  if(!S.incOld && p.days>10) return false;
   if(S.latestOnly){
     // keep only the most recent checked poll from this pollster
-    const newer = POLLS.some(q=>q.on && q.name===p.name && q.days<p.days && (S.incOld||q.days<=10));
+    const newer = POLLS.some(q=>q.on && q.name===p.name && q.days<p.days);
     if(newer) return false;
   }
   return true;
@@ -334,7 +343,6 @@ function isActive(p){
 // Why an inactive poll is out of the model, for the weight column.
 function whyOff(p){
   if(!p.on) return {txt:'unchecked', tip:'You unchecked this poll.'};
-  if(!S.incOld && p.days>10) return {txt:'>10 days', tip:'Older than 10 days and "Include polls older than 10 days" is off.'};
   return {txt:'replaced', tip:'A newer poll from this pollster replaces it while "Latest poll per pollster only" is on.'};
 }
 function activePolls(){ return POLLS.filter(isActive); }
@@ -497,6 +505,7 @@ function render(){
     POLLS.find(p=>p.id===e.target.dataset.poll).on=e.target.checked; render();
   }));
   applyFilter();
+  renderInstitutes();
 
   if(!agg){
     $('probL').textContent='—';$('probF').textContent='—';
@@ -549,6 +558,21 @@ function applyFilter(){
   $('selNone').textContent=q?'Unselect shown':'Unselect all';
   $('selAll').disabled=$('selNone').disabled=(q && !shown);
 }
+function renderInstitutes(){
+  const names=[...new Set(POLLS.map(p=>p.name))].sort((a,b)=>a.localeCompare(b,'pt'));
+  const box=$('instList'); box.innerHTML='';
+  names.forEach(name=>{
+    const ps=POLLS.filter(p=>p.name===name), on=ps.filter(p=>p.on).length;
+    const lab=document.createElement('label'); lab.className='inst'+(on?'':' none');
+    lab.title=`${on} of ${ps.length} ${name} poll${ps.length>1?'s':''} selected`;
+    const cb=document.createElement('input'); cb.type='checkbox';
+    cb.checked=on===ps.length; cb.indeterminate=on>0&&on<ps.length;
+    cb.addEventListener('change',()=>{ const v=on<ps.length; ps.forEach(p=>p.on=v); render(); });
+    const t=document.createElement('span'); t.textContent=name;
+    const n=document.createElement('span'); n.className='n'; n.textContent=ps.length;
+    lab.append(cb,t,n); box.appendChild(lab);
+  });
+}
 function setShown(on){ const q=query(); POLLS.forEach(p=>{ if(matches(p,q)) p.on=on; }); render(); }
 $('pollSearch').addEventListener('input',applyFilter);
 $('selAll').addEventListener('click',()=>setShown(true));
@@ -567,14 +591,25 @@ function bindRange(id,key){
   $(id).addEventListener('input',e=>{S[key]=parseFloat(e.target.value);syncInputs();render();});
 }
 bindRange('sigma','sigma');bindRange('bias','bias');bindRange('hl','hl');
-['qweight','nweight','latestOnly','incOld'].forEach(k=>{
+['qweight','nweight','latestOnly'].forEach(k=>{
   $(k).addEventListener('change',e=>{S[k]=e.target.checked;render();});
 });
+// Unticking "older than 10 days" unticks those polls in the table; ticking it again restores
+// only the ones it removed (polls you unticked yourself stay unticked).
+const OLD_OFF=new Set();
+function setIncOld(v){
+  if(S.incOld===v) return;
+  if(!v) POLLS.forEach(p=>{ if(p.days>10 && p.on){ p.on=false; OLD_OFF.add(p.id); } });
+  else { POLLS.forEach(p=>{ if(OLD_OFF.has(p.id)) p.on=true; }); OLD_OFF.clear(); }
+  S.incOld=v;
+}
+$('incOld').addEventListener('change',e=>{setIncOld(e.target.checked);render();});
 $('presets').addEventListener('click',e=>{
   const p=e.target.dataset.preset; if(!p)return;
-  S={...PRESETS[p]}; syncInputs(); render();
+  const next={...PRESETS[p]}; S={...next, incOld:S.incOld}; setIncOld(next.incOld); syncInputs(); render();
 });
-$('reset').addEventListener('click',()=>{S={...BASE};syncInputs();render();});
+// Base case = default settings with every poll selected.
+$('reset').addEventListener('click',()=>{S={...BASE}; OLD_OFF.clear(); POLLS.forEach(p=>p.on=true); syncInputs(); render();});
 
 let rt; window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{const a=aggregate();if(a)draw(simulate(a));},150);});
 const mq=window.matchMedia('(prefers-color-scheme:dark)');
