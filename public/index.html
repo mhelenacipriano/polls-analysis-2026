@@ -87,16 +87,42 @@ body{margin:0;font-size:14px}
     border:1px solid var(--line);color:var(--muted);margin-left:6px;vertical-align:middle}
 
   /* ---- distribution ---- */
-  .dist{padding:18px 16px 14px}
-  .dist h2{font-size:15px;padding:0 4px}
-  .dist .note{font-size:12.5px;color:var(--muted);padding:3px 4px 10px}
+  .dist,.trend{padding:18px 16px 14px}
+  .dist h2,.trend h2{font-size:15px;padding:0 4px}
+  .dist .note,.trend .note{font-size:12.5px;color:var(--muted);padding:3px 4px 10px}
+  .trend .stat{background:var(--surface-2)}
+  .compare{padding:18px 16px 14px}
+  .compare h2{font-size:15px;padding:0 4px}
+  .compare .note{font-size:12.5px;color:var(--muted);padding:3px 4px 10px}
+  table.cmp{width:100%;min-width:0;border-collapse:collapse;font-size:13px}
+  @media (max-width:560px){table.cmp .rng,table.cmp .pbarmini{display:none}table.cmp{font-size:12px}
+    table.cmp th,table.cmp td{padding:7px 4px}}
+  table.cmp th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);font-weight:600;text-align:left}
+  table.cmp th,table.cmp td{padding:8px 7px;border-bottom:1px solid var(--line)}
+  table.cmp th,table.cmp td:first-child{white-space:normal}
+  table.cmp td:first-child{text-align:left}
+  table.cmp td.num,table.cmp th.num{text-align:right;font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+  table.cmp tr.this td{background:var(--surface-2);font-weight:600}
+  .mname{display:inline}
+  .mname .info-i{margin-left:3px;vertical-align:1px}
+  .info-i{display:inline-grid;place-items:center;width:15px;height:15px;border-radius:50%;border:1px solid var(--muted);
+    color:var(--muted);font:600 10px/1 var(--font-mono);font-style:italic}
+  .tip{position:relative;cursor:help;outline:none}
+  .tip .tipbox{display:none;position:absolute;left:0;top:calc(100% + 6px);z-index:5;width:min(320px,80vw);padding:10px 12px;
+    background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);
+    font:400 12.5px/1.45 var(--font-body);text-transform:none;letter-spacing:0;white-space:normal}
+  .tip .tipbox b{font-weight:600}
+  .tip:hover .tipbox,.tip:focus .tipbox,.tip:focus-within .tipbox{display:block}
+  .tip:focus-visible .info-i{outline:2px solid var(--flavio);outline-offset:2px}
+  .pbarmini{display:inline-block;height:6px;border-radius:3px;background:var(--muted);opacity:.6;vertical-align:middle}
   .chartwrap{position:relative;width:100%}
   canvas{display:block;width:100%;height:auto}
   .legend{display:flex;gap:16px;flex-wrap:wrap;padding:4px 6px 2px;font-size:12.5px;color:var(--muted)}
   .legend span{display:inline-flex;align-items:center;gap:6px}
 
   /* ---- stat row ---- */
-  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .stats,.tstats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .tstats{margin-top:14px}
   .stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 13px}
   .stat .k{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);font-family:var(--font-mono)}
   .stat .v{font-family:var(--font-display);font-weight:700;font-size:19px;margin-top:4px}
@@ -173,7 +199,7 @@ body{margin:0;font-size:14px}
   footer{margin-top:22px;font-size:11.5px;color:var(--faint);text-align:center;line-height:1.6}
 
   @media (max-width:520px){
-    .stats{grid-template-columns:1fr}
+    .stats,.tstats{grid-template-columns:1fr}
     .names .prob{font-size:30px}
   }
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -224,6 +250,32 @@ body{margin:0;font-size:14px}
     <div class="stat"><div class="k">Expected margin</div><div class="v" id="sMargin">—</div></div>
   </section>
 
+  <section class="card trend">
+    <h2>Trend to election day</h2>
+    <p class="note">What happens if the recent movement in the checked polls carries on until the vote. Each pollster is compared only with itself, so a firm that always runs high for one candidate doesn't fake a trend. Uses every checked poll, including older waves from the same pollster. Lines join polls from the same pollster.</p>
+    <div class="chartwrap"><canvas id="trendChart" aria-label="Flávio's valid-vote share in the checked polls by release date, with the trend line projected to 25 October"></canvas></div>
+    <div class="legend">
+      <span><span class="dot" style="background:var(--flavio)"></span>poll with Flávio ahead</span>
+      <span><span class="dot" style="background:var(--lula)"></span>Lula ahead</span>
+      <span><span class="dot" style="background:var(--fg);width:14px;height:3px;border-radius:1px"></span>trend, dashed beyond the latest poll</span>
+    </div>
+    <div class="tstats">
+      <div class="stat"><div class="k">Movement per day</div><div class="v" id="tSlope">—</div></div>
+      <div class="stat"><div class="k">Projected for 25 Oct · Flávio</div><div class="v" id="tProj">—</div></div>
+      <div class="stat"><div class="k">Odds if the trend holds</div><div class="v" id="tOdds">—</div></div>
+    </div>
+    <p class="note" id="tNote" style="margin-top:10px">—</p>
+  </section>
+
+  <section class="card compare">
+    <h2>Other ways to read the same polls</h2>
+    <p class="note">The same checked polls and settings, run through different probability models. Hover or tap <span class="info-i" aria-hidden="true">i</span> for how each one works and where it goes wrong. <b>Precision</b> is the width of the 80% range: narrower means more certain, not more accurate. No model can be scored until the result is in.</p>
+    <table class="cmp">
+      <thead><tr><th>Model</th><th class="num">Flávio share</th><th class="num">Lula wins</th><th class="num">Flávio wins</th><th class="num rng">80% range</th><th>Precision</th></tr></thead>
+      <tbody id="cmpBody"></tbody>
+    </table>
+  </section>
+
   <section class="card controls">
     <h2>Model assumptions</h2>
     <p class="lead">Scenarios set the sliders; adjust from there.</p>
@@ -255,10 +307,9 @@ body{margin:0;font-size:14px}
 
     <div class="ctl">
       <div class="toggles">
-        <label class="tog"><input type="checkbox" id="qweight">Weight high-accuracy pollsters more (Group A ×1.5)</label>
-        <label class="tog"><input type="checkbox" id="nweight">Weight by sample size</label>
+        <label class="tog"><input type="checkbox" id="exclOld">Exclude polls older than 10 days</label>
         <label class="tog"><input type="checkbox" id="latestOnly">Latest poll per pollster only</label>
-        <label class="tog"><input type="checkbox" id="incOld">Include polls older than 10 days</label>
+        <label class="tog"><input type="checkbox" id="nweight">Weight by sample size</label>
       </div>
     </div>
     <button class="reset" id="reset">Reset to base case</button>
@@ -287,7 +338,7 @@ body{margin:0;font-size:14px}
     <div class="method">
       <p>The model treats the runoff as a two-way race on <b>valid votes</b> and asks: given the polls, what range of outcomes is plausible once we admit that polls can be wrong together?</p>
       <h3>1 · Aggregate</h3>
-      <p>Each poll's Flávio valid-vote share is pooled into a weighted average. Weight = recency decay × (optional) √sample size, capped at 5,000 × (optional) 1.5 for pollsters with the best recent accuracy record. By default only each pollster's latest poll counts, so a firm that publishes every few days doesn't get extra say. Where a poll reported only total votes, the valid share is computed as Flávio ÷ (Flávio + Lula).</p>
+      <p>Each poll's Flávio valid-vote share is pooled into a weighted average. Weight = recency decay × (optional) √sample size, capped at 5,000; every pollster is treated as equally accurate. By default only each pollster's latest poll counts, so a firm that publishes every few days doesn't get extra say, and polls released more than 10 days before the vote are left out. Where a poll reported only total votes, the valid share is computed as Flávio ÷ (Flávio + Lula).</p>
       <h3>2 · Model the uncertainty</h3>
       <p>The headline number isn't the point — the spread is. Each of 40,000 simulated elections draws a final margin from a normal distribution centered on the weighted average (plus any swing adjustment), with standard deviation set by the <code>polling error</code> slider. This "all polls off together" term dominates because pooled sampling error is negligible.</p>
       <h3>3 · Count</h3>
@@ -316,7 +367,7 @@ body{margin:0;font-size:14px}
 let POLLS = [];
 const fmtDate = iso => new Date(iso+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
 
-const BASE = {sigma:2.0, bias:0, hl:5, qweight:true, nweight:true, latestOnly:true, incOld:true};
+const BASE = {sigma:2.0, bias:0, hl:5, nweight:true, latestOnly:true, exclOld:true};
 let S = {...BASE};
 const PRESETS = {
   base:      {...BASE},
@@ -342,6 +393,7 @@ function isActive(p){
 }
 // Why an inactive poll is out of the model, for the weight column.
 function whyOff(p){
+  if(!p.on && OLD_OFF.has(p.id)) return {txt:'over 10 days', tip:'Released more than 10 days before the vote. Untick "Exclude polls older than 10 days" to count it.'};
   if(!p.on) return {txt:'unchecked', tip:'You unchecked this poll.'};
   return {txt:'replaced', tip:'A newer poll from this pollster replaces it while "Latest poll per pollster only" is on.'};
 }
@@ -351,7 +403,6 @@ function weights(list){
     let w = Math.pow(0.5, p.days / S.hl);        // recency
     if(S.nweight) w *= Math.sqrt(Math.min(p.n,5000)); // sample size, capped so one huge online panel can't dominate
     else w *= Math.sqrt(2000);                   // neutral baseline so scale is stable
-    if(S.qweight && p.groupA) w *= 1.5;          // pollster quality
     return w;
   });
 }
@@ -463,6 +514,160 @@ function draw(res){
   ctx.strokeStyle=muted;ctx.lineWidth=2;
   ctx.beginPath();ctx.moveTo(mx,y0);ctx.lineTo(mx,Y(sm[Math.min(BINS-1,Math.max(0,Math.floor((res.median-lo)/bw)))]));ctx.stroke();
 }
+// ---------- trend to election day ----------
+// Within-pollster regression: Flávio share = pollster level + slope × days before the vote.
+// Only pollsters with two or more checked polls (on different days) inform the slope.
+function normCdf(z){
+  const t=1/(1+0.3275911*Math.abs(z)/Math.SQRT2);
+  const e=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-z*z/2);
+  return z>=0?(1+e)/2:(1-e)/2;
+}
+function trend(agg){
+  const on=POLLS.filter(p=>p.on), groups={};
+  on.forEach(p=>(groups[p.name]=groups[p.name]||[]).push(p));
+  let sxx=0,sxy=0,nObs=0,nGroups=0; const repeat=[];
+  for(const [name,ps] of Object.entries(groups)){
+    const tm=ps.reduce((a,p)=>a+p.days,0)/ps.length, ym=ps.reduce((a,p)=>a+p.flavio,0)/ps.length;
+    ps.forEach(p=>{sxx+=(p.days-tm)**2; sxy+=(p.days-tm)*(p.flavio-ym);});
+    nObs+=ps.length; nGroups++;
+    if(ps.length>1 && ps.some(p=>p.days!==ps[0].days)) repeat.push(name);
+  }
+  const dof=nObs-nGroups-1;
+  if(!repeat.length || sxx===0 || dof<1) return {repeat,ok:false};
+  const b=sxy/sxx;                       // pts per day before the vote
+  let rss=0;
+  for(const ps of Object.values(groups)){
+    const tm=ps.reduce((a,p)=>a+p.days,0)/ps.length, ym=ps.reduce((a,p)=>a+p.flavio,0)/ps.length;
+    ps.forEach(p=>{rss+=((p.flavio-ym)-b*(p.days-tm))**2;});
+  }
+  const se=Math.sqrt(rss/dof/sxx);
+  // 97.5% Student-t quantile for the leftover degrees of freedom; few repeat polls means a shaky error estimate.
+  const tq=[12.71,4.30,3.18,2.78,2.57,2.45,2.36,2.31,2.26,2.23][dof-1]||2.0;
+  const perDay=-b;                       // change per day moving toward the vote
+  // The model's average sits at the weighted mean age of the polls it uses; project from there to day 0.
+  const tbar=agg.list.reduce((a,p,i)=>a+p.days*agg.w[i],0)/agg.W;
+  const center=agg.m+S.bias, proj=center+perDay*tbar;
+  const sd=Math.sqrt(S.sigma**2+(tbar*se*tq/1.96)**2);
+  const pF=1-normCdf((50-proj)/sd);
+  return {ok:true,repeat,perDay,se,tq,dof,tbar,center,proj,sd,pF,nObs};
+}
+const tcanvas=$('trendChart'); const tctx=tcanvas.getContext('2d');
+function drawTrend(tr){
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  const cssW=tcanvas.clientWidth||600, cssH=Math.max(200,Math.round(cssW*0.42));
+  tcanvas.width=cssW*dpr; tcanvas.height=cssH*dpr;
+  tctx.setTransform(dpr,0,0,dpr,0,0); tctx.clearRect(0,0,cssW,cssH);
+  const on=POLLS.filter(p=>p.on); if(!on.length) return;
+  const padL=40,padR=14,padT=12,padB=26, x0=padL,x1=cssW-padR,y0=cssH-padB,y1=padT;
+  const dMax=Math.max(...on.map(p=>p.days))+0.5;
+  const vals=on.map(p=>p.flavio).concat([50]); if(tr.ok) vals.push(tr.proj, tr.center+tr.perDay*(tr.tbar-dMax));
+  let lo=Math.floor(Math.min(...vals)-0.5), hi=Math.ceil(Math.max(...vals)+0.5);
+  lo=Math.max(40,lo); hi=Math.min(60,hi);
+  const X=d=>x0+(dMax-d)/dMax*(x1-x0), Y=v=>y0-(v-lo)/(hi-lo)*(y0-y1);
+  const fg=cssv('--fg'), line=cssv('--line'), faint=cssv('--faint'), muted=cssv('--muted');
+  tctx.font='11px "IBM Plex Mono",monospace';
+  // y grid
+  tctx.textAlign='right'; tctx.textBaseline='middle';
+  const step=hi-lo>8?2:1;
+  for(let v=Math.ceil(lo/step)*step; v<=hi; v+=step){
+    tctx.strokeStyle=line; tctx.globalAlpha=.5; tctx.lineWidth=1;
+    tctx.beginPath(); tctx.moveTo(x0,Y(v)); tctx.lineTo(x1,Y(v)); tctx.stroke(); tctx.globalAlpha=1;
+    tctx.fillStyle=faint; tctx.fillText(v+'%',x0-6,Y(v));
+  }
+  // x ticks: dates (days before 25 Oct)
+  tctx.textAlign='center'; tctx.textBaseline='top';
+  const xstep=dMax>12?4:2;
+  for(let d=0; d<=dMax; d+=xstep){ tctx.fillStyle=faint; tctx.textAlign=d===0?'right':'center'; tctx.fillText(d===0?'25 Oct':(25-d)+' Oct', X(d), y0+6); }
+  // 50% line
+  tctx.strokeStyle=fg; tctx.lineWidth=1.5; tctx.setLineDash([4,4]);
+  tctx.beginPath(); tctx.moveTo(x0,Y(50)); tctx.lineTo(x1,Y(50)); tctx.stroke(); tctx.setLineDash([]);
+  // polls, joined per pollster
+  const groups={}; on.forEach(p=>(groups[p.name]=groups[p.name]||[]).push(p));
+  Object.values(groups).forEach(ps=>{
+    ps.sort((a,b)=>b.days-a.days);
+    if(ps.length>1){ tctx.strokeStyle=hexA(muted,.55); tctx.lineWidth=1.2; tctx.beginPath();
+      ps.forEach((p,i)=>i?tctx.lineTo(X(p.days),Y(p.flavio)):tctx.moveTo(X(p.days),Y(p.flavio))); tctx.stroke(); }
+    ps.forEach(p=>{ tctx.fillStyle=p.flavio>50?cssv('--flavio'):p.flavio<50?cssv('--lula'):muted;
+      tctx.beginPath(); tctx.arc(X(p.days),Y(p.flavio),3.5,0,2*Math.PI); tctx.fill(); });
+  });
+  if(!tr.ok) return;
+  // trend line through the model's average, solid over the poll window, dashed to election day
+  const at=d=>tr.center+tr.perDay*(tr.tbar-d), dMin=Math.min(...on.map(p=>p.days));
+  tctx.strokeStyle=fg; tctx.lineWidth=2.2;
+  tctx.beginPath(); tctx.moveTo(X(dMax),Y(at(dMax))); tctx.lineTo(X(dMin),Y(at(dMin))); tctx.stroke();
+  tctx.setLineDash([5,4]); tctx.beginPath(); tctx.moveTo(X(dMin),Y(at(dMin))); tctx.lineTo(X(0),Y(tr.proj)); tctx.stroke(); tctx.setLineDash([]);
+  tctx.fillStyle=fg; tctx.beginPath(); tctx.arc(X(0),Y(tr.proj),4.5,0,2*Math.PI); tctx.fill();
+}
+function renderTrend(agg){
+  const clear=msg=>{ ['tSlope','tProj','tOdds'].forEach(id=>$(id).textContent='—'); $('tNote').textContent=msg; };
+  if(!agg){ drawTrend({ok:false}); clear('No polls selected.'); return; }
+  const tr=trend(agg); drawTrend(tr);
+  if(!tr.ok){ clear('Not enough to measure a trend: it needs at least one pollster with two checked polls released on different days. Untick "Exclude polls older than 10 days" or tick older waves in the table.'); return; }
+  const who=v=>v>=0?'Flávio':'Lula', col=v=>v>=0?'--flavio':'--lula';
+  const pd=tr.perDay, pF=Math.round(tr.pF*100);
+  $('tSlope').innerHTML=`<span style="color:var(${col(pd)})">${pd>=0?'+':'−'}${Math.abs(pd).toFixed(2)}</span> <small>pts/day ${who(pd)} · ±${tr.se.toFixed(2)}</small>`;
+  $('tProj').innerHTML=`<span style="color:var(--flavio)">${fmt1(tr.proj)}</span> <small>Flávio</small> · <span style="color:var(--lula)">${fmt1(100-tr.proj)}</span> <small>Lula</small>`;
+  $('tOdds').innerHTML=`<span style="color:var(--lula)">${100-pF}%</span> <small>Lula</small> · <span style="color:var(--flavio)">${pF}%</span> <small>Flávio</small>`;
+  const sig=Math.abs(pd)<tr.tq*tr.se;
+  $('tNote').innerHTML=`Measured from ${tr.repeat.length} pollster${tr.repeat.length>1?'s':''} with repeat polls (${tr.repeat.map(esc).join(', ')}). `+
+    `The model's average reflects polls about ${fmt1(tr.tbar)} days old on average, so the trend is carried forward that many days to 25 Oct. `+
+    (sig?`<b>Given how few repeat polls there are, the movement is not clearly different from no change.</b> `:`The movement is clearly different from no change (95% level), though a short trend can still stall. `)+
+    `Odds combine the polling-error slider (±${fmt1(S.sigma)} pts) with the uncertainty in the trend itself. Late trends often stall or reverse; treat this as a what-if, not a forecast.`;
+}
+// ---------- model comparison ----------
+// Student-t with 4 degrees of freedom has a closed-form CDF.
+function t4Cdf(t){ const u=t/Math.sqrt(1+t*t/4); return 0.5+0.375*u*(1-t*t/(12*(1+t*t/4))); }
+const Z80=1.2816, T4_80=1.5332;          // 90th percentiles of the normal and t(4)
+function compareModels(agg){
+  const list=agg.list, bias=S.bias, sig=S.sigma, rows=[];
+  const normal=(c,sd)=>({c, pF:1-normCdf((50-c)/sd), lo:c-Z80*sd, hi:c+Z80*sd});
+  rows.push({key:'this', name:'This dashboard', ...normal(agg.m+bias,sig),
+    tip:'<b>Weighted average + normal polling error.</b> Each poll is weighted by recency and, if ticked, sample size; the average is shifted by the swing slider and given a ±σ polling error set by the slider. Simple and transparent; assumes every pollster is equally accurate and that a miss of more than 2σ is very rare.'});
+  const avg=list.reduce((a,p)=>a+p.flavio,0)/list.length;
+  rows.push({name:'Simple average', ...normal(avg+bias,sig),
+    tip:'<b>Plain mean of the polls, no weights.</b> A 3-week-old poll counts as much as yesterday\'s and a 1,000-person poll as much as a 15,000-person one. Hard to game, but slow to react to late movement.'});
+  const srt=list.map(p=>p.flavio).sort((a,b)=>a-b), mid=srt.length>>1;
+  const med=srt.length%2?srt[mid]:(srt[mid-1]+srt[mid])/2;
+  rows.push({name:'Median poll', ...normal(med+bias,sig),
+    tip:'<b>Middle poll, same polling error.</b> Ignores outliers entirely: one pollster far from the rest can\'t move it. Throws away information about how far the others lean.'});
+  const ct=agg.m+bias, sc=sig/Math.SQRT2;  // t(4) scaled to the same standard deviation as the slider
+  rows.push({name:'Fat tails (Student-t)', c:ct, pF:1-t4Cdf((50-ct)/sc), lo:ct-T4_80*sc, hi:ct+T4_80*sc,
+    tip:'<b>Same average and overall spread, but shaped like real polling errors.</b> A Student-t (4 degrees of freedom) is more peaked in the middle and has longer tails than a normal curve. Small misses become more common and big misses (like Brazil 2022) more likely too, so a modest lead looks a bit safer while a large upset is less far-fetched.'});
+  if(list.length>=2){
+    const m=agg.m, sd=Math.sqrt(list.reduce((a,p)=>a+(p.flavio-m)**2,0)/(list.length-1));
+    rows.push({name:'Pollster disagreement', ...normal(m+bias,Math.max(sd,0.1)),
+      tip:`<b>Uses how much the pollsters disagree as the error.</b> Standard deviation across the selected polls is ±${fmt1(sd)} pts. If pollsters cluster tightly this looks confident, but they can all be wrong together, which this can\'t see.`});
+  }
+  let iv=0, ivm=0;
+  list.forEach(p=>{ const v=p.flavio*(100-p.flavio)/p.n; iv+=1/v; ivm+=p.flavio/v; });
+  rows.push({name:'Sampling error only', ...normal(ivm/iv+bias,Math.sqrt(1/iv)),
+    tip:`<b>Pools the polls as if they were one big random sample.</b> Weights each poll by the inverse of its sampling variance, giving a margin of only ±${fmt1(Math.sqrt(1/iv))} pts. Shown as a warning: it ignores that polls share errors (who answers, turnout, wording), so it is badly overconfident.`});
+  const tr=trend(agg);
+  if(tr.ok) rows.push({name:'Trend projection', c:tr.proj, pF:tr.pF, lo:tr.proj-Z80*tr.sd, hi:tr.proj+Z80*tr.sd,
+    tip:'<b>Carries the recent within-pollster movement forward to 25 Oct.</b> See "Trend to election day" above. Adds the trend\'s own uncertainty to the polling error. Late trends often stall, so this is a what-if.'});
+  const ahead=list.reduce((a,p)=>a+(p.flavio>50?1:p.flavio===50?0.5:0),0);
+  rows.push({name:'Count of polls', c:null, pF:ahead/list.length, lo:null, hi:null,
+    tip:'<b>Share of selected polls with Flávio ahead (ties count half).</b> Not really a probability: a poll at 50.1 counts the same as one at 55. Included because headlines often read the race this way.'});
+  return rows;
+}
+function renderCompare(agg){
+  const body=$('cmpBody'); body.innerHTML='';
+  if(!agg){ body.innerHTML='<tr><td colspan="6" style="color:var(--muted)">No polls selected.</td></tr>'; return; }
+  const rows=compareModels(agg);
+  const wmax=Math.max(...rows.filter(r=>r.lo!==null).map(r=>r.hi-r.lo));
+  rows.forEach((r,i)=>{
+    const tr=document.createElement('tr'); if(r.key==='this') tr.className='this';
+    const pF=Math.round(r.pF*100), w=r.lo===null?null:r.hi-r.lo;
+    tr.innerHTML=`
+      <td><span class="tip mname" tabindex="0">${esc(r.name)} <span class="info-i" aria-hidden="true">i</span><span class="tipbox" role="tooltip">${r.tip}</span></span></td>
+      <td class="num" style="color:var(--flavio)">${r.c===null?'—':fmt1(r.c)+'%'}</td>
+      <td class="num" style="color:var(--lula)">${100-pF}%</td>
+      <td class="num" style="color:var(--flavio)">${pF}%</td>
+      <td class="num rng">${r.lo===null?'—':fmt1(r.lo)+'–'+fmt1(r.hi)}</td>
+      <td>${w===null?'<span style="color:var(--faint)">n/a</span>':`<span class="pbarmini" style="width:${Math.max(3,w/wmax*70)}px"></span> <span style="font-family:var(--font-mono);font-size:12px;color:var(--muted)">±${fmt1(w/2)}</span>`}</td>`;
+    body.appendChild(tr);
+  });
+}
 function hexA(hex,a){
   hex=hex.replace('#','');
   if(hex.length===3)hex=hex.split('').map(c=>c+c).join('');
@@ -486,11 +691,10 @@ function render(){
     const active=isActive(p);
     const tr=document.createElement('tr'); tr.dataset.id=p.id; if(!active)tr.className='off';
     const wpct=active&&wmax? Math.round(wmap[p.id]/wmax*100):0;
-    const tags=(p.groupA?'<span class="tag">A</span>':'');
     tr.innerHTML=`
       <td><label style="display:flex;align-items:center;gap:8px;cursor:pointer">
         <input type="checkbox" ${p.on?'checked':''} data-poll="${p.id}">
-        <span class="pollname">${p.name}</span>${tags}</label></td>
+        <span class="pollname">${p.name}</span></label></td>
       <td class="num">${p.field}</td>
       <td class="num">${p.released}</td>
       <td class="num">${p.n.toLocaleString()}</td>
@@ -512,8 +716,9 @@ function render(){
     $('segL').style.width='0'; $('segF').style.width='0';
     ['sCentral','sRange','sMargin'].forEach(id=>$(id).textContent='—');
     $('fav').textContent='No polls selected. Tick at least one poll in the table below.';
-    ctx.clearRect(0,0,canvas.width,canvas.height); return;
+    ctx.clearRect(0,0,canvas.width,canvas.height); renderTrend(null); renderCompare(null); return;
   }
+  renderTrend(agg); renderCompare(agg);
   const res=simulate(agg);
   const pF=Math.round(res.pF*100), pL=100-pF;
   $('probL').textContent=pL+'%'; $('probF').textContent=pF+'%';
@@ -581,8 +786,8 @@ $('selNone').addEventListener('click',()=>setShown(false));
 // ---------- controls wiring ----------
 function syncInputs(){
   $('sigma').value=S.sigma; $('bias').value=S.bias; $('hl').value=S.hl;
-  $('qweight').checked=S.qweight; $('nweight').checked=S.nweight;
-  $('latestOnly').checked=S.latestOnly; $('incOld').checked=S.incOld;
+  $('nweight').checked=S.nweight;
+  $('latestOnly').checked=S.latestOnly; $('exclOld').checked=S.exclOld;
   $('sigmaV').textContent='±'+fmt1(S.sigma)+' pts';
   $('biasV').textContent=(S.bias>0?'+':'')+fmt1(S.bias)+' pts'+(S.bias>0?' →Flávio':S.bias<0?' →Lula':'');
   $('hlV').textContent=fmt1(S.hl)+' days';
@@ -591,29 +796,31 @@ function bindRange(id,key){
   $(id).addEventListener('input',e=>{S[key]=parseFloat(e.target.value);syncInputs();render();});
 }
 bindRange('sigma','sigma');bindRange('bias','bias');bindRange('hl','hl');
-['qweight','nweight','latestOnly'].forEach(k=>{
+['nweight','latestOnly'].forEach(k=>{
   $(k).addEventListener('change',e=>{S[k]=e.target.checked;render();});
 });
-// Unticking "older than 10 days" unticks those polls in the table; ticking it again restores
+// Ticking "Exclude polls older than 10 days" unticks those polls in the table; unticking it restores
 // only the ones it removed (polls you unticked yourself stay unticked).
 const OLD_OFF=new Set();
-function setIncOld(v){
-  if(S.incOld===v) return;
-  if(!v) POLLS.forEach(p=>{ if(p.days>10 && p.on){ p.on=false; OLD_OFF.add(p.id); } });
+function setExclOld(v){
+  if(S.exclOld===v) return;
+  if(v) POLLS.forEach(p=>{ if(p.days>10 && p.on){ p.on=false; OLD_OFF.add(p.id); } });
   else { POLLS.forEach(p=>{ if(OLD_OFF.has(p.id)) p.on=true; }); OLD_OFF.clear(); }
-  S.incOld=v;
+  S.exclOld=v;
 }
-$('incOld').addEventListener('change',e=>{setIncOld(e.target.checked);render();});
+$('exclOld').addEventListener('change',e=>{setExclOld(e.target.checked);render();});
 $('presets').addEventListener('click',e=>{
   const p=e.target.dataset.preset; if(!p)return;
-  const next={...PRESETS[p]}; S={...next, incOld:S.incOld}; setIncOld(next.incOld); syncInputs(); render();
+  const next={...PRESETS[p]}; S={...next, exclOld:S.exclOld}; setExclOld(next.exclOld); syncInputs(); render();
 });
-// Base case = default settings with every poll selected.
-$('reset').addEventListener('click',()=>{S={...BASE}; OLD_OFF.clear(); POLLS.forEach(p=>p.on=true); syncInputs(); render();});
+// Base case = default settings with every poll selected, then the 10-day rule applied.
+function resetBase(){ S={...BASE, exclOld:false}; OLD_OFF.clear(); POLLS.forEach(p=>p.on=true); setExclOld(BASE.exclOld); syncInputs(); }
+$('reset').addEventListener('click',()=>{resetBase(); render();});
 
-let rt; window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{const a=aggregate();if(a)draw(simulate(a));},150);});
+const redrawCharts=()=>{const a=aggregate();if(a){draw(simulate(a));drawTrend(trend(a));}};
+let rt; window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(redrawCharts,150);});
 const mq=window.matchMedia('(prefers-color-scheme:dark)');
-mq.addEventListener&&mq.addEventListener('change',()=>{const a=aggregate();if(a)draw(simulate(a));});
+mq.addEventListener&&mq.addEventListener('change',redrawCharts);
 
 async function boot(){
   try{
@@ -626,7 +833,7 @@ async function boot(){
   }
   const last = POLLS.reduce((a,p)=>p.days<a.days?p:a, POLLS[0]);
   document.getElementById('asof').textContent = `${POLLS.length} polls · latest released ${last.released}`;
-  syncInputs(); render();
+  resetBase(); render();
 }
 boot();
 </script>
