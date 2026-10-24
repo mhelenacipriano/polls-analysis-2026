@@ -136,7 +136,8 @@ body{margin:0;font-size:14px}
     font-weight:500;text-align:right}
   th:first-child,td:first-child{text-align:left}
   td.num{font-family:var(--font-mono)}
-  tr.off{opacity:.4}
+  tr.off{opacity:.45}
+  .why{font-family:var(--font-body);font-size:11.5px;color:var(--muted);font-style:italic;cursor:help}
   .pollname{font-weight:600}
   .tag{font-family:var(--font-mono);font-size:10px;padding:1px 6px;border-radius:5px;border:1px solid var(--line);
     color:var(--muted);margin-left:6px}
@@ -248,7 +249,7 @@ body{margin:0;font-size:14px}
 
   <section class="card polls">
     <h2>Polls in the model</h2>
-    <p class="note">Valid-vote two-way share (blank, null and undecided excluded). Uncheck any poll to drop it. Bars show each poll's current weight. Source links go to the report each number was taken from; look up a registration number in the TSE's <a href="https://pesqele-divulgacao.tse.jus.br/app/pesquisa/listar.xhtml" target="_blank" rel="noopener">PesqEle</a> ("Número de identificação") — it holds the method, not the results.</p>
+    <p class="note">Valid-vote two-way share (blank, null and undecided excluded). Uncheck any poll to drop it. Bars show each poll's current weight; dimmed rows are out of the model, and the weight column says why (e.g. "replaced": an older wave from a pollster with a newer poll — untick "Latest poll per pollster only" to count it). Source links go to the report each number was taken from; look up a registration number in the TSE's <a href="https://pesqele-divulgacao.tse.jus.br/app/pesquisa/listar.xhtml" target="_blank" rel="noopener">PesqEle</a> ("Número de identificação") — it holds the method, not the results.</p>
     <div class="tbl-scroll">
       <table>
         <thead><tr><th>Pollster</th><th>Fieldwork</th><th>Released</th><th>Sample</th><th>Lula</th><th>Flávio</th><th>Weight</th><th>TSE reg.</th><th>Source</th></tr></thead>
@@ -315,6 +316,12 @@ function isActive(p){
     if(newer) return false;
   }
   return true;
+}
+// Why an inactive poll is out of the model, for the weight column.
+function whyOff(p){
+  if(!p.on) return {txt:'unchecked', tip:'You unchecked this poll.'};
+  if(!S.incOld && p.days>10) return {txt:'>10 days', tip:'Older than 10 days and "Include polls older than 10 days" is off.'};
+  return {txt:'replaced', tip:'A newer poll from this pollster replaces it while "Latest poll per pollster only" is on.'};
 }
 function activePolls(){ return POLLS.filter(isActive); }
 function weights(list){
@@ -467,7 +474,7 @@ function render(){
       <td class="num">${p.n.toLocaleString()}</td>
       <td class="num" style="color:var(--lula)">${fmt1(p.lula)}</td>
       <td class="num" style="color:var(--flavio)">${fmt1(p.flavio)}</td>
-      <td class="num"><span class="tcell">${active?Math.round(wmap[p.id]/agg.W*100)+'%':'—'}<span class="wbar" style="width:${wpct*0.5}px"></span></span></td>
+      <td class="num"><span class="tcell">${active?Math.round(wmap[p.id]/agg.W*100)+'%':(w=>`<span class="why" title="${w.tip}">${w.txt}</span>`)(whyOff(p))}<span class="wbar" style="width:${wpct*0.5}px"></span></span></td>
       <td class="num">${p.reg?esc(p.reg):'—'}</td>
       <td>${srcLink(p.src)}</td>`;
     body.appendChild(tr);
