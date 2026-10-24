@@ -22,11 +22,21 @@
   {
     "id": "pd1",
     "name": "PoderData/Aya",
-    "field": "—",
+    "field": "Oct 10-12",
     "released": "2026-10-13",
     "days": 12,
-    "n": 4000,
+    "n": 3000,
     "flavio": 51.0,
+    "groupA": false
+  },
+  {
+    "id": "nx1",
+    "name": "BTG/Nexus",
+    "field": "Oct 10-12",
+    "released": "2026-10-13",
+    "days": 12,
+    "n": 2002,
+    "flavio": 52.0,
     "groupA": false
   },
   {
@@ -58,6 +68,16 @@
     "n": 4998,
     "flavio": 51.1,
     "groupA": true
+  },
+  {
+    "id": "nx2",
+    "name": "BTG/Nexus",
+    "field": "Oct 16-18",
+    "released": "2026-10-19",
+    "days": 6,
+    "n": 2002,
+    "flavio": 50.3,
+    "groupA": false
   },
   {
     "id": "rt1",
@@ -112,7 +132,7 @@
   {
     "id": "ix1",
     "name": "Indexa/Broadcast",
-    "field": "—",
+    "field": "Oct 20-21",
     "released": "2026-10-22",
     "days": 3,
     "n": 2000,
