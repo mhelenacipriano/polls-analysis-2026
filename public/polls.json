@@ -266,20 +266,6 @@
     "note": "From the urnaaberta.com.br aggregator (retrieved 2026-10-25); release date taken as fieldwork end; TSE registration not given; sample size 2,400 from https://eleicoes2026.opiniao.inf.br/publicacoes/pesquisas-segundo-turno/"
   },
   {
-    "id": "veru2",
-    "name": "Veritá",
-    "field": "Oct 12-16",
-    "released": "2026-10-16",
-    "days": 9,
-    "n": 15554,
-    "flavio": 51.1,
-    "groupA": false,
-    "reg": "",
-    "src": "https://urnaaberta.com.br/",
-    "nKnown": true,
-    "note": "From the urnaaberta.com.br aggregator (retrieved 2026-10-25); release date taken as fieldwork end; TSE registration not given; sample size 15,554 from https://eleicoes2026.opiniao.inf.br/publicacoes/pesquisas-segundo-turno/"
-  },
-  {
     "id": "datu2",
     "name": "DataTrends",
     "field": "Oct 15-17",
