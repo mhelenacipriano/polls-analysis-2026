@@ -97,7 +97,14 @@ body{margin:0;font-size:14px}
   .dist h2,.trend h2{font-size:15px;padding:0 4px}
   .dist .note,.trend .note{font-size:12.5px;color:var(--muted);padding:3px 4px 10px}
   .trend .stat{background:var(--surface-2)}
-  .compare{padding:18px 16px 14px}
+  .compare,.history{padding:18px 16px 14px}
+  .history h2{font-size:15px;padding:0 4px}
+  .history .note{font-size:12.5px;color:var(--muted);padding:3px 4px 10px}
+  .history h3{font-size:13px;margin:14px 4px 6px}
+  .history table{min-width:0;width:100%}
+  .history th,.history td{white-space:normal}
+  .history td:nth-child(-n+2),.history th:nth-child(-n+2){text-align:left}
+  @media (max-width:560px){.history .hide-sm{display:none}.history th,.history td{padding:7px 4px}}
   .compare h2{font-size:15px;padding:0 4px}
   .compare .note{font-size:12.5px;color:var(--muted);padding:3px 4px 10px}
   table.cmp{width:100%;min-width:0;border-collapse:collapse;font-size:13px}
@@ -296,6 +303,11 @@ body{margin:0;font-size:14px}
     </table>
   </section>
 
+  <section class="card history">
+    <h2 data-i18n="hHist">Past runoffs: final polls vs. results</h2>
+    <div id="histBody"></div>
+  </section>
+
   <section class="card controls">
     <h2 data-i18n="hCtl">Model assumptions</h2>
     <p class="lead" data-i18n="nCtl">Scenarios set the sliders; adjust from there.</p>
@@ -326,7 +338,7 @@ body{margin:0;font-size:14px}
     </div>
 
     <h3 class="subh" data-i18n="hTurn">Turnout and late deciders</h3>
-    <p class="hint" data-i18n="nTurn">What the polls can't see: who actually shows up, and where blank, null and undecided voters end up. These shift every model on the page; at their defaults they change nothing.</p>
+    <p class="hint" data-i18n="nTurn">What the polls can't see: who actually shows up, and where blank, null and undecided voters end up. These shift every model on the page. The defaults come from the 2018 and 2022 runoffs (see “Past runoffs” above); with both splits at 50/50 they barely move the average.</p>
 
     <div class="ctl">
       <div class="row"><label for="pool" data-i18n="lPool">Blank, null and undecided voters</label><span class="val" id="poolV"></span></div>
@@ -337,7 +349,7 @@ body{margin:0;font-size:14px}
     <div class="ctl">
       <div class="row"><label for="conv" data-i18n="lConv">Of those, how many end up voting for a candidate</label><span class="val" id="convV"></span></div>
       <input type="range" id="conv" min="0" max="100" step="5">
-      <p class="hint" data-i18n="hConv">0% = they all stay blank, null or at home, which is what the valid-vote numbers assume.</p>
+      <p class="hint" data-i18n="hConv">0% = they all stay blank, null or at home, which is what the valid-vote numbers assume. The default 40% is how many did vote in 2018 and 2022: the share answering “neither” in the final polls, minus the blank and null share of votes cast.</p>
     </div>
 
     <div class="ctl">
@@ -348,14 +360,14 @@ body{margin:0;font-size:14px}
 
     <div class="ctl">
       <div class="row"><label for="turn" data-i18n="lTurn">Extra turnout beyond what the polls assume</label><span class="val" id="turnV"></span></div>
-      <input type="range" id="turn" min="0" max="20" step="0.5">
-      <p class="hint" data-i18n="hTurn2">Extra valid votes as a percentage of the votes the polls already count. 5% means 5 extra voters for every 100 the polls expect.</p>
+      <input type="range" id="turn" min="-10" max="20" step="0.1">
+      <p class="hint" data-i18n="hTurn2">Extra valid votes as a percentage of the votes the polls already count; negative means fewer. The default −0.9% is the average change in valid votes between the first and second rounds in 2018 (−2.1%) and 2022 (+0.3%).</p>
     </div>
 
     <div class="ctl">
       <div class="row"><label for="turnL" data-i18n="lTurnL">Lula's share among the extra voters</label><span class="val" id="turnLV"></span></div>
       <input type="range" id="turnL" min="0" max="100" step="5">
-      <p class="hint" data-i18n="hTurnL">50% = the new voters split like a coin and change nothing. Set it above 50% if a high turnout mostly brings out Lula's voters.</p>
+      <p class="hint" data-i18n="hTurnL">50% = the voters who come or go split like a coin and change nothing. Set it above 50% if a high turnout mostly brings out Lula's voters.</p>
     </div>
     <p class="adjnote" id="adjNote" aria-live="polite"></p>
 
@@ -364,6 +376,7 @@ body{margin:0;font-size:14px}
         <label class="tog"><input type="checkbox" id="exclOld"><span data-i18n="tExcl">Exclude polls older than 10 days</span></label>
         <label class="tog"><input type="checkbox" id="latestOnly"><span data-i18n="tLatest">Latest poll per pollster only</span></label>
         <label class="tog"><input type="checkbox" id="nweight"><span data-i18n="tSample">Weight by sample size</span></label>
+        <label class="tog"><input type="checkbox" id="house"><span data-i18n="tHouse">Correct for past poll errors (2018, 2022)</span></label>
       </div>
     </div>
     <button class="reset" id="reset" data-i18n="reset">Reset to base case</button>
@@ -371,7 +384,7 @@ body{margin:0;font-size:14px}
 
   <section class="card polls">
     <h2 data-i18n="hPolls">Polls in the model</h2>
-    <p class="note" data-i18n="nPolls">Valid-vote two-way share (blank, null and undecided excluded). Only Datafolha, Quaest and Vox Brasil are ticked when the page opens; tick any other poll, or a whole institute, to add it. Bars show each poll's current weight; dimmed rows are out of the model, and the weight column says why (e.g. "replaced": an older wave from a pollster with a newer poll — untick "Latest poll per pollster only" to count it). Source links go to the report each number was taken from; look up a registration number in the TSE's <a href="https://pesqele-divulgacao.tse.jus.br/app/pesquisa/listar.xhtml" target="_blank" rel="noopener">PesqEle</a> ("Número de identificação") — it holds the method, not the results.</p>
+    <p class="note" data-i18n="nPolls">Published valid-vote two-way share (blank, null and undecided excluded); the model may lower Lula's figure by the pollster's past miss. Only Datafolha, Quaest and Vox Brasil are ticked when the page opens; tick any other poll, or a whole institute, to add it. Bars show each poll's current weight; dimmed rows are out of the model, and the weight column says why (e.g. "replaced": an older wave from a pollster with a newer poll — untick "Latest poll per pollster only" to count it). Source links go to the report each number was taken from; look up a registration number in the TSE's <a href="https://pesqele-divulgacao.tse.jus.br/app/pesquisa/listar.xhtml" target="_blank" rel="noopener">PesqEle</a> ("Número de identificação") — it holds the method, not the results.</p>
     <div class="ptools">
       <input type="search" id="pollSearch" data-i18n-attr="placeholder:phSearch;aria-label:aSearch" placeholder="Search pollster, date, registration, source…" aria-label="Search polls" autocomplete="off">
       <button type="button" class="preset" id="selAll">Select all</button>
@@ -395,6 +408,8 @@ body{margin:0;font-size:14px}
       <p>Each poll's Lula valid-vote share is pooled into a weighted average. Weight = recency decay × (optional) √sample size, capped at 5,000; every pollster is treated as equally accurate. By default only each pollster's latest poll counts, so a firm that publishes every few days doesn't get extra say, and polls released more than 10 days before the vote are left out. Where a poll reported only total votes, the valid share is computed as Lula ÷ (Lula + Flávio).</p>
       <h3>2 · Model the uncertainty</h3>
       <p>The headline number isn't the point — the spread is. Each of 40,000 simulated elections draws a final margin from a normal distribution centered on the weighted average (plus any swing adjustment), with standard deviation set by the <code>polling error</code> slider. This "all polls off together" term dominates because pooled sampling error is negligible.</p>
+      <h3>Past poll errors</h3>
+      <p>In the 2018 and 2022 runoffs, the final Datafolha and Quaest polls overstated the PT candidate by 0.5 to 1.2 points of the two-candidate vote. With the correction on (the default), each poll's Lula share is lowered by its pollster's average miss before anything else; pollsters without a record get the average. The poll table still shows the published numbers.</p>
       <h3>Turnout and late deciders</h3>
       <p>Valid-vote shares assume blank, null and undecided respondents stay out and that the people who vote look like the people polled. The turnout sliders relax both: a share of the blank/null/undecided pool can vote, split as you choose, and extra voters can arrive, also split as you choose. The result moves Lula's poll average before the swing slider, in every model on the page.</p>
       <h3>3 · Count</h3>
@@ -441,8 +456,33 @@ const fmtField=f=>{ if(LANG!=='pt'||f==='—') return f;
   const m=/^([A-Z][a-z]{2}) (.+)$/.exec(f), i=m?MON_EN.indexOf(m[1]):-1;
   return i>=0&&!/[A-Za-z]/.test(m[2])?`${m[2]} ${MON_PT[i]}`:f.replace(/[A-Z][a-z]{2}/g,x=>MON_PT[MON_EN.indexOf(x)]||x); };
 
-const BASE = {sigma:2.0, bias:0, hl:5, nweight:true, latestOnly:true, exclOld:true,
-  pool:8, conv:0, convL:50, turn:0, turnL:50};   // turnout sliders start neutral
+// ---------- past runoffs: final polls vs the result (2018, 2022) ----------
+// Final poll before each runoff from the pollsters in the default selection (Vox Brasil polled neither).
+// pt/right/neither are total-vote shares; result is the PT candidate's share of the valid vote (TSE).
+const HISTORY=[
+  {year:2018, name:'Datafolha', field:'26–27 Oct', pt:39, right:47, neither:13, result:44.87, blankNull:9.57},
+  {year:2022, name:'Datafolha', field:'28–29 Oct', pt:49, right:45, neither:7,  result:50.90, blankNull:4.59},
+  {year:2022, name:'Quaest',    field:'27–29 Oct', pt:45, right:42, neither:13, result:50.90, blankNull:4.59},
+];
+// Valid votes in each round (TSE): how much the electorate that counted changed between rounds.
+const TURNOUT=[
+  {year:2018, first:107050673, second:104838753},
+  {year:2022, first:118229719, second:118552353},
+];
+HISTORY.forEach(h=>{ h.two=h.pt/(h.pt+h.right)*100; h.miss=h.two-h.result;
+  h.conv=Math.max(0,(h.neither-h.blankNull)/h.neither*100); });       // share of "neither" who ended up voting
+TURNOUT.forEach(t=>t.change=(t.second/t.first-1)*100);
+const HOUSE={}; HISTORY.forEach(h=>(HOUSE[h.name]=HOUSE[h.name]||[]).push(h.miss));
+Object.keys(HOUSE).forEach(k=>HOUSE[k]=HOUSE[k].reduce((a,b)=>a+b,0)/HOUSE[k].length);
+const HOUSE_ALL=HISTORY.reduce((a,h)=>a+h.miss,0)/HISTORY.length;   // for pollsters with no record
+const houseErr=name=>name in HOUSE?HOUSE[name]:HOUSE_ALL;
+const HIST_TURN=Math.round(TURNOUT.reduce((a,t)=>a+t.change,0)/TURNOUT.length*10)/10;
+const HIST_CONV=Math.round(HISTORY.reduce((a,h)=>a+h.conv,0)/HISTORY.length/5)*5;
+// Lula's share as the model reads it: the published figure, minus the pollster's past miss when the correction is on.
+const LS=p=>p.lula-(S.house?houseErr(p.name):0);
+
+const BASE = {sigma:2.0, bias:0, hl:5, nweight:true, latestOnly:true, exclOld:true, house:true,
+  pool:8, conv:HIST_CONV, convL:50, turn:HIST_TURN, turnL:50};   // turnout defaults come from 2018 and 2022
 let S = {...BASE};
 const PRESETS = {
   base:      {...BASE},
@@ -489,7 +529,7 @@ function aggregate(){
   if(!list.length) return null;
   const w=weights(list);
   const W=w.reduce((a,b)=>a+b,0);
-  const m=list.reduce((a,p,i)=>a+p.lula*w[i],0)/W;      // weighted mean Lula share
+  const m=list.reduce((a,p,i)=>a+LS(p)*w[i],0)/W;      // weighted mean Lula share
   return {list,w,W,m};
 }
 // Turnout and late deciders: move Lula's valid-vote share L (in %) before the swing slider.
@@ -500,7 +540,7 @@ function adjust(L){
   const pool=S.pool/100, conv=pool*S.conv/100, v=1-pool;
   if(conv>0) p=(p*v+conv*S.convL/100)/(v+conv);
   const t=S.turn/100;
-  if(t>0) p=(p+t*S.turnL/100)/(1+t);
+  if(t!==0) p=(p+t*S.turnL/100)/(1+t);        // negative t: voters who don't come back, split the same way
   return p*100;
 }
 
@@ -622,8 +662,8 @@ function trend(agg){
   on.forEach(p=>(groups[p.name]=groups[p.name]||[]).push(p));
   let sxx=0,sxy=0,nObs=0,nGroups=0; const repeat=[];
   for(const [name,ps] of Object.entries(groups)){
-    const tm=ps.reduce((a,p)=>a+p.days,0)/ps.length, ym=ps.reduce((a,p)=>a+p.lula,0)/ps.length;
-    ps.forEach(p=>{sxx+=(p.days-tm)**2; sxy+=(p.days-tm)*(p.lula-ym);});
+    const tm=ps.reduce((a,p)=>a+p.days,0)/ps.length, ym=ps.reduce((a,p)=>a+LS(p),0)/ps.length;
+    ps.forEach(p=>{sxx+=(p.days-tm)**2; sxy+=(p.days-tm)*(LS(p)-ym);});
     nObs+=ps.length; nGroups++;
     if(ps.length>1 && ps.some(p=>p.days!==ps[0].days)) repeat.push(name);
   }
@@ -632,8 +672,8 @@ function trend(agg){
   const b=sxy/sxx;                       // pts per day before the vote
   let rss=0;
   for(const ps of Object.values(groups)){
-    const tm=ps.reduce((a,p)=>a+p.days,0)/ps.length, ym=ps.reduce((a,p)=>a+p.lula,0)/ps.length;
-    ps.forEach(p=>{rss+=((p.lula-ym)-b*(p.days-tm))**2;});
+    const tm=ps.reduce((a,p)=>a+p.days,0)/ps.length, ym=ps.reduce((a,p)=>a+LS(p),0)/ps.length;
+    ps.forEach(p=>{rss+=((LS(p)-ym)-b*(p.days-tm))**2;});
   }
   const se=Math.sqrt(rss/dof/sxx);
   // 97.5% Student-t quantile for the leftover degrees of freedom; few repeat polls means a shaky error estimate.
@@ -655,7 +695,7 @@ function drawTrend(tr){
   const on=trendPolls(); if(!on.length) return;
   const padL=40,padR=14,padT=12,padB=26, x0=padL,x1=cssW-padR,y0=cssH-padB,y1=padT;
   const dMax=Math.max(...on.map(p=>p.days))+0.5;
-  const vals=on.map(p=>p.lula).concat([50]); if(tr.ok) vals.push(tr.proj, tr.center+tr.perDay*(tr.tbar-dMax));
+  const vals=on.map(p=>LS(p)).concat([50]); if(tr.ok) vals.push(tr.proj, tr.center+tr.perDay*(tr.tbar-dMax));
   let lo=Math.floor(Math.min(...vals)-0.5), hi=Math.ceil(Math.max(...vals)+0.5);
   lo=Math.max(40,lo); hi=Math.min(60,hi);
   const X=d=>x0+(dMax-d)/dMax*(x1-x0), Y=v=>y0-(v-lo)/(hi-lo)*(y0-y1);
@@ -681,9 +721,9 @@ function drawTrend(tr){
   Object.values(groups).forEach(ps=>{
     ps.sort((a,b)=>b.days-a.days);
     if(ps.length>1){ tctx.strokeStyle=hexA(muted,.55); tctx.lineWidth=1.2; tctx.beginPath();
-      ps.forEach((p,i)=>i?tctx.lineTo(X(p.days),Y(p.lula)):tctx.moveTo(X(p.days),Y(p.lula))); tctx.stroke(); }
-    ps.forEach(p=>{ tctx.fillStyle=p.lula>50?cssv('--lula'):p.lula<50?cssv('--flavio'):muted;
-      tctx.beginPath(); tctx.arc(X(p.days),Y(p.lula),3.5,0,2*Math.PI); tctx.fill(); });
+      ps.forEach((p,i)=>i?tctx.lineTo(X(p.days),Y(LS(p))):tctx.moveTo(X(p.days),Y(LS(p)))); tctx.stroke(); }
+    ps.forEach(p=>{ tctx.fillStyle=LS(p)>50?cssv('--lula'):LS(p)<50?cssv('--flavio'):muted;
+      tctx.beginPath(); tctx.arc(X(p.days),Y(LS(p)),3.5,0,2*Math.PI); tctx.fill(); });
   });
   if(!tr.ok) return;
   // trend line through the model's average, solid over the poll window, dashed to election day
@@ -730,11 +770,11 @@ function compareModels(agg){
   rows.push({key:'this', name:T('This dashboard','Este painel'), ...normal(A(agg.m),sig),
     tip:T('<b>Weighted average of Lula\'s share + normal polling error.</b> Each poll is weighted by recency and, if ticked, sample size; the average is shifted by the swing slider and given a ±σ polling error set by the slider. Simple and transparent; assumes every pollster is equally accurate and that a miss of more than 2σ is very rare.',
       '<b>Média ponderada da fatia de Lula + erro normal das pesquisas.</b> Cada pesquisa é ponderada pela atualidade e, se marcado, pelo tamanho da amostra; a média é deslocada pelo controle de virada e recebe um erro de ±σ definido pelo controle. Simples e transparente; supõe que todos os institutos são igualmente precisos e que um erro maior que 2σ é muito raro.')});
-  const avg=list.reduce((a,p)=>a+p.lula,0)/list.length;
+  const avg=list.reduce((a,p)=>a+LS(p),0)/list.length;
   rows.push({key:'avg', name:T('Simple average','Média simples'), ...normal(A(avg),sig),
     tip:T('<b>Plain mean of the polls, no weights.</b> A 3-week-old poll counts as much as yesterday\'s and a 1,000-person poll as much as a 15,000-person one. Hard to game, but slow to react to late movement.',
       '<b>Média simples das pesquisas, sem pesos.</b> Uma pesquisa de três semanas vale tanto quanto a de ontem, e uma de 1.000 entrevistas tanto quanto uma de 15.000. Difícil de manipular, mas lenta para reagir a movimentos de última hora.')});
-  const srt=list.map(p=>p.lula).sort((a,b)=>a-b), mid=srt.length>>1;
+  const srt=list.map(p=>LS(p)).sort((a,b)=>a-b), mid=srt.length>>1;
   const med=srt.length%2?srt[mid]:(srt[mid-1]+srt[mid])/2;
   rows.push({key:'median', name:T('Median poll','Pesquisa mediana'), ...normal(A(med),sig),
     tip:T('<b>Middle poll, same polling error.</b> Ignores outliers entirely: one pollster far from the rest can\'t move it. Throws away information about how far the others lean.',
@@ -745,13 +785,13 @@ function compareModels(agg){
     tip:T('<b>Same average and overall spread, but shaped like real polling errors.</b> A Student-t (4 degrees of freedom) is more peaked in the middle and has longer tails than a normal curve. Small misses become more common and big misses (like Brazil 2022) more likely too, so a modest lead looks a bit safer while a large upset is less far-fetched.',
       '<b>Mesma média e mesma dispersão, mas com o formato dos erros reais de pesquisa.</b> Uma t de Student (4 graus de liberdade) é mais pontuda no meio e tem caudas mais longas que a curva normal. Erros pequenos ficam mais comuns e erros grandes (como em 2022) também, então uma vantagem modesta parece um pouco mais segura, enquanto uma grande surpresa fica menos improvável.')});
   if(list.length>=2){
-    const m=agg.m, sd=Math.sqrt(list.reduce((a,p)=>a+(p.lula-m)**2,0)/(list.length-1));
+    const m=agg.m, sd=Math.sqrt(list.reduce((a,p)=>a+(LS(p)-m)**2,0)/(list.length-1));
     rows.push({key:'disagree', name:T('Pollster disagreement','Divergência entre institutos'), ...normal(A(m),Math.max(sd,0.1)),
       tip:T(`<b>Uses how much the pollsters disagree as the error.</b> Standard deviation across the selected polls is ±${fmt1(sd)} pts. If pollsters cluster tightly this looks confident, but they can all be wrong together, which this can't see.`,
         `<b>Usa a divergência entre os institutos como erro.</b> O desvio-padrão entre as pesquisas selecionadas é de ±${fmt1(sd)} pts. Se os institutos estiverem próximos, o resultado parece confiante, mas todos podem errar juntos, e isso este modelo não enxerga.`)});
   }
   let iv=0, ivm=0;
-  list.forEach(p=>{ const v=p.lula*(100-p.lula)/p.n; iv+=1/v; ivm+=p.lula/v; });
+  list.forEach(p=>{ const v=LS(p)*(100-LS(p))/p.n; iv+=1/v; ivm+=LS(p)/v; });
   rows.push({key:'sampling', name:T('Sampling error only','Só erro amostral'), ...normal(A(ivm/iv),Math.sqrt(1/iv)),
     tip:T(`<b>Pools the polls as if they were one big random sample.</b> Weights each poll by the inverse of its sampling variance, giving a margin of only ±${fmt1(Math.sqrt(1/iv))} pts. Shown as a warning: it ignores that polls share errors (who answers, turnout, wording), so it is badly overconfident.`,
       `<b>Junta as pesquisas como se fossem uma única grande amostra aleatória.</b> Pondera cada pesquisa pelo inverso da variância amostral, o que dá uma margem de apenas ±${fmt1(Math.sqrt(1/iv))} pts. Aparece como alerta: ignora que as pesquisas compartilham erros (quem responde, comparecimento, formulação da pergunta) e por isso é excessivamente confiante.`)});
@@ -761,7 +801,7 @@ function compareModels(agg){
     tip:T(`<b>Starts from the first round and lets the polls update it.</b> Prior: Lula's two-way share of the first-round valid vote, ${fmt1(PRIOR_L)}% (45.16% vs 47.03%, as reported from the TSE), give or take ${fmt1(PRIOR_SD)} pts. The poll average, with the polling-error slider as its uncertainty, pulls it toward the polls. Combining two sources narrows the range, so it is more confident than the dashboard; it is wrong if the runoff electorate differs a lot from the first round's.`,
       `<b>Parte do primeiro turno e deixa as pesquisas atualizarem.</b> Base: a fatia de Lula entre os dois no voto válido do 1º turno, ${fmt1(PRIOR_L)}% (45,16% contra 47,03%, segundo o TSE), com margem de ±${fmt1(PRIOR_SD)} pts. A média das pesquisas, com o controle de erro como incerteza, puxa o valor na direção delas. Juntar duas fontes estreita a faixa, então é mais confiante que o painel; erra se o eleitorado do 2º turno for muito diferente do 1º.`)});
   // Mixture: each selected poll is a possible truth, chosen with its weight.
-  const mw=agg.w.map(w=>w/agg.W), mc=list.map(p=>A(p.lula));
+  const mw=agg.w.map(w=>w/agg.W), mc=list.map(p=>A(LS(p)));
   const mcdf=x=>mw.reduce((a,w,i)=>a+w*normCdf((x-mc[i])/sig),0);
   const mq=q=>{ let lo=30,hi=70; for(let k=0;k<50;k++){ const md=(lo+hi)/2; mcdf(md)<q?lo=md:hi=md; } return (lo+hi)/2; };
   rows.push({key:'mixture', name:T('Mixture of polls','Mistura de pesquisas'), c:mw.reduce((a,w,i)=>a+w*mc[i],0), pL:1-mcdf(50), lo:mq(.1), hi:mq(.9),
@@ -772,7 +812,7 @@ function compareModels(agg){
   if(tr.ok) rows.push({key:'trend', name:T('Trend projection','Projeção da tendência'), ...normal(tr.proj,tr.sd), pL:tr.pL,
     tip:T('<b>Carries the recent within-pollster movement forward to 25 Oct.</b> See "Trend to election day" above. Adds the trend\'s own uncertainty to the polling error. Late trends often stall, so this is a what-if.',
       '<b>Projeta até 25/10 o movimento recente dentro de cada instituto.</b> Veja "Tendência até o dia da eleição" acima. Soma a incerteza da própria tendência ao erro das pesquisas. Tendências de última hora costumam parar, então isto é um "e se".')});
-  const ahead=list.reduce((a,p)=>{ const v=A(p.lula); return a+(v>50?1:v===50?0.5:0); },0);
+  const ahead=list.reduce((a,p)=>{ const v=A(LS(p)); return a+(v>50?1:v===50?0.5:0); },0);
   rows.push({key:'count', name:T('Count of polls','Contagem de pesquisas'), c:null, pL:ahead/list.length, lo:null, hi:null, pdf:null,
     tip:T('<b>Share of selected polls with Lula ahead (ties count half).</b> Not really a probability: a poll at 50.1 counts the same as one at 55. Included because headlines often read the race this way.',
       '<b>Parcela das pesquisas selecionadas com Lula à frente (empates contam metade).</b> Não é bem uma probabilidade: uma pesquisa com 50,1 conta igual a uma com 55. Incluída porque as manchetes muitas vezes leem a disputa assim.')});
@@ -787,8 +827,8 @@ function renderCompare(agg){
   const wmax=Math.max(...rows.filter(r=>r.lo!==null).map(r=>r.hi-r.lo));
   // one x-axis for every chart so the curves can be compared by eye
   const c0=adjust(agg.m)+S.bias, half=Math.max(5,3.5*S.sigma);
-  const dom=[Math.max(40,Math.floor(Math.min(c0-half,...agg.list.map(p=>p.lula-1),...rows.filter(r=>r.lo!==null).map(r=>r.lo-1)))),
-             Math.min(60,Math.ceil(Math.max(c0+half,...agg.list.map(p=>p.lula+1),...rows.filter(r=>r.hi!==null).map(r=>r.hi+1))))];
+  const dom=[Math.max(40,Math.floor(Math.min(c0-half,...agg.list.map(p=>LS(p)-1),...rows.filter(r=>r.lo!==null).map(r=>r.lo-1)))),
+             Math.min(60,Math.ceil(Math.max(c0+half,...agg.list.map(p=>LS(p)+1),...rows.filter(r=>r.hi!==null).map(r=>r.hi+1))))];
   rows.forEach((r,i)=>{
     const open=CMP_OPEN.has(r.key), id='cmpx'+i;
     const tr=document.createElement('tr'); tr.className=(r.key==='this'?'this ':'')+'mrow';
@@ -833,12 +873,12 @@ function drawModel(cv,r,[lo,hi],list){
       c.lineTo(X(b),Y(r.pdf(b))); c.lineTo(X(b),y0); c.closePath(); c.fillStyle=hexA(col,.75); c.fill(); };
     fill(lo,50,colF); fill(50,hi,colL);
     c.beginPath(); xs.forEach((x,i)=>i?c.lineTo(X(x),Y(ys[i])):c.moveTo(X(x),Y(ys[i]))); c.strokeStyle=hexA(fg,.4); c.lineWidth=1.3; c.stroke();
-    list.forEach(p=>{ c.strokeStyle=muted; c.lineWidth=1.5; c.beginPath(); c.moveTo(X(p.lula),y0+3); c.lineTo(X(p.lula),y0+11); c.stroke(); });
+    list.forEach(p=>{ c.strokeStyle=muted; c.lineWidth=1.5; c.beginPath(); c.moveTo(X(LS(p)),y0+3); c.lineTo(X(LS(p)),y0+11); c.stroke(); });
   } else {
     const seen={};
-    list.forEach(p=>{ const k=p.lula.toFixed(1); seen[k]=(seen[k]||0)+1;
-      c.fillStyle=p.lula>50?colL:p.lula<50?colF:muted;
-      c.beginPath(); c.arc(X(p.lula),y0-8-(seen[k]-1)*12,5,0,2*Math.PI); c.fill(); });
+    list.forEach(p=>{ const k=LS(p).toFixed(1); seen[k]=(seen[k]||0)+1;
+      c.fillStyle=LS(p)>50?colL:LS(p)<50?colF:muted;
+      c.beginPath(); c.arc(X(LS(p)),y0-8-(seen[k]-1)*12,5,0,2*Math.PI); c.fill(); });
   }
   c.strokeStyle=fg; c.lineWidth=1.5; c.setLineDash([4,4]); c.beginPath(); c.moveTo(X(50),y1); c.lineTo(X(50),y0); c.stroke(); c.setLineDash([]);
 }
@@ -920,7 +960,7 @@ function render(){
 
   const shift=adjust(agg.m)-agg.m;
   $('adjNote').innerHTML=Math.abs(shift)<0.05
-    ?T('At these settings turnout and late deciders change nothing.','Com estes valores, comparecimento e indecisos não mudam nada.')
+    ?T('At these settings turnout and late deciders barely move Lula\'s average.','Com estes valores, comparecimento e indecisos quase não mexem na média de Lula.')
     :T(`These sliders move Lula's poll average from ${fmt1(agg.m)}% to <b>${fmt1(agg.m+shift)}%</b> (${shift>0?'+':'−'}${fmt1(Math.abs(shift))} pts) before the swing slider.`,
        `Estes controles levam a média de Lula de ${fmt1(agg.m)}% para <b>${fmt1(agg.m+shift)}%</b> (${shift>0?'+':'−'}${fmt1(Math.abs(shift))} pts) antes do controle de virada.`);
 
@@ -972,7 +1012,7 @@ $('selNone').addEventListener('click',()=>setShown(false));
 // ---------- controls wiring ----------
 function syncInputs(){
   $('sigma').value=S.sigma; $('bias').value=S.bias; $('hl').value=S.hl;
-  $('nweight').checked=S.nweight;
+  $('nweight').checked=S.nweight; $('house').checked=S.house;
   $('latestOnly').checked=S.latestOnly; $('exclOld').checked=S.exclOld;
   $('sigmaV').textContent='±'+fmt1(S.sigma)+' pts';
   $('biasV').textContent=(S.bias>0?'+':'')+fmt1(S.bias)+' pts'+(S.bias>0?' →Lula':S.bias<0?' →Flávio':'');
@@ -981,7 +1021,7 @@ function syncInputs(){
   $('poolV').textContent=fmt1(S.pool)+'%';
   $('convV').textContent=Math.round(S.conv)+'%';
   $('convLV').textContent=T('Lula ','Lula ')+Math.round(S.convL)+'% · Flávio '+(100-Math.round(S.convL))+'%';
-  $('turnV').textContent='+'+fmt1(S.turn)+'%';
+  $('turnV').textContent=(S.turn<0?'−':'+')+fmt1(Math.abs(S.turn))+'%';
   $('turnLV').textContent='Lula '+Math.round(S.turnL)+'% · Flávio '+(100-Math.round(S.turnL))+'%';
 }
 function bindRange(id,key){
@@ -989,7 +1029,7 @@ function bindRange(id,key){
 }
 bindRange('sigma','sigma');bindRange('bias','bias');bindRange('hl','hl');
 ['pool','conv','convL','turn','turnL'].forEach(k=>bindRange(k,k));
-['nweight','latestOnly'].forEach(k=>{
+['nweight','latestOnly','house'].forEach(k=>{
   $(k).addEventListener('change',e=>{S[k]=e.target.checked;render();});
 });
 // Ticking "Exclude polls older than 10 days" unticks those polls in the table; unticking it restores
@@ -1028,6 +1068,25 @@ async function boot(){
     return;
   }
   setAsof(); resetBase(); render();
+}
+function renderHistory(){
+  const sign=x=>(x<0?'−':'+')+fmt1(Math.abs(x));
+  const rows=HISTORY.map(h=>`<tr><td>${h.year}</td><td>${h.name}</td><td class="num hide-sm">${fmtField(h.field.replace(/(\d+)–(\d+) (\w+)/,'$3 $1–$2'))}</td>
+    <td class="num">${h.pt} / ${h.right} / ${h.neither}</td><td class="num">${fmt1(h.two)}%</td><td class="num">${fmtN(h.result,2)}%</td>
+    <td class="num" style="color:var(--lula)">${sign(h.miss)}</td></tr>`).join('');
+  const trows=TURNOUT.map(t=>`<tr><td>${t.year}</td><td class="num">${t.first.toLocaleString(LOC())}</td><td class="num">${t.second.toLocaleString(LOC())}</td><td class="num">${sign(t.change)}%</td></tr>`).join('');
+  const corr=Object.keys(HOUSE).map(k=>`${k} −${fmt1(HOUSE[k])}`).join(', ');
+  $('histBody').innerHTML=T(
+   `<p class="note">How far each pollster's final runoff poll was from the result, on the PT candidate's share of the two-candidate vote (Haddad in 2018, Lula in 2022). Every one overstated the PT candidate. With “Correct for past poll errors” on, each poll's Lula share is lowered by its pollster's average miss: ${corr} pts, and −${fmt1(HOUSE_ALL)} pts (the average) for pollsters with no record. Vox Brasil did not poll the 2018 or 2022 runoffs.</p>
+    <table><thead><tr><th>Year</th><th>Pollster</th><th class="num hide-sm">Fieldwork</th><th class="num">PT / right / neither</th><th class="num">PT two-way</th><th class="num">Result</th><th class="num">Miss</th></tr></thead><tbody>${rows}</tbody></table>
+    <h3>Turnout between rounds</h3>
+    <table><thead><tr><th>Year</th><th class="num">Valid votes, 1st round</th><th class="num">2nd round</th><th class="num">Change</th></tr></thead><tbody>${trows}</tbody></table>
+    <p class="note" style="margin-top:8px">Defaults taken from this: extra turnout ${sign(HIST_TURN)}% (the average change), and ${HIST_CONV}% of blank, null and undecided respondents ending up with a candidate (the final polls' “neither” share against the blank and null share of votes cast: ${HISTORY.map(h=>Math.round(h.conv)+'%').join(', ')}). Sources: the final polls from Wikipedia's polling tables, results and turnout from the TSE.</p>`,
+   `<p class="note">O quanto a última pesquisa de cada instituto antes do 2º turno errou o resultado, na fatia do candidato do PT entre os dois (Haddad em 2018, Lula em 2022). Todas superestimaram o candidato do PT. Com “Corrigir pelos erros passados” marcado, a fatia de Lula em cada pesquisa é reduzida pelo erro médio do instituto: ${corr.replace(/\./g,',')} pts, e −${fmt1(HOUSE_ALL)} pts (a média) para institutos sem histórico. A Vox Brasil não fez pesquisas de 2º turno em 2018 nem em 2022.</p>
+    <table><thead><tr><th>Ano</th><th>Instituto</th><th class="num hide-sm">Campo</th><th class="num">PT / direita / nenhum</th><th class="num">PT entre os dois</th><th class="num">Resultado</th><th class="num">Erro</th></tr></thead><tbody>${rows}</tbody></table>
+    <h3>Comparecimento entre os turnos</h3>
+    <table><thead><tr><th>Ano</th><th class="num">Votos válidos, 1º turno</th><th class="num">2º turno</th><th class="num">Variação</th></tr></thead><tbody>${trows}</tbody></table>
+    <p class="note" style="margin-top:8px">Valores iniciais tirados daqui: comparecimento extra de ${sign(HIST_TURN)}% (a variação média) e ${HIST_CONV}% dos brancos, nulos e indecisos acabando num candidato (a fatia “nenhum” das últimas pesquisas comparada com a de brancos e nulos nos votos: ${HISTORY.map(h=>Math.round(h.conv)+'%').join(', ')}). Fontes: últimas pesquisas pelas tabelas da Wikipédia; resultados e comparecimento pelo TSE.</p>`);
 }
 function setAsof(){
   if(!POLLS.length) return;
@@ -1076,23 +1135,25 @@ const I18N_PT={
   lHl:`Meia-vida do peso por atualidade`,
   hHl:`Com que rapidez as pesquisas antigas perdem peso. Com meia-vida de 5 dias, uma pesquisa de 5 dias atrás vale metade de uma de hoje.`,
   hTurn:`Comparecimento e indecisos`,
-  nTurn:`O que as pesquisas não enxergam: quem de fato vai votar e para onde vão os eleitores que hoje dizem branco, nulo ou indeciso. Estes controles deslocam todos os modelos da página; nos valores iniciais não mudam nada.`,
+  nTurn:`O que as pesquisas não enxergam: quem de fato vai votar e para onde vão os eleitores que hoje dizem branco, nulo ou indeciso. Estes controles deslocam todos os modelos da página. Os valores iniciais vêm dos 2º turnos de 2018 e 2022 (veja “2º turnos anteriores” acima); com as duas divisões em 50/50, quase não mexem na média.`,
   lPool:`Brancos, nulos e indecisos`,
   hPool:`Parcela dos entrevistados que não escolheu nenhum candidato. 8% é a média das últimas pesquisas Datafolha (5%), Quaest (9%) e Vox Brasil (10,3%).`,
   lConv:`Desses, quantos acabam votando num candidato`,
-  hConv:`0% = todos continuam em branco, nulo ou em casa, que é o que os votos válidos supõem.`,
+  hConv:`0% = todos continuam em branco, nulo ou em casa, que é o que os votos válidos supõem. Os 40% iniciais são quantos de fato votaram em 2018 e 2022: a fatia que respondeu “nenhum” nas últimas pesquisas, menos a de brancos e nulos nos votos.`,
   lConvL:`Fatia de Lula entre esses indecisos de última hora`,
   hConvL:`50% = eles se dividem por igual e a disputa não muda. Acima de 50% pendem para Lula; abaixo, para Flávio.`,
   lTurn:`Comparecimento além do que as pesquisas supõem`,
-  hTurn2:`Votos válidos extras, em porcentagem dos votos que as pesquisas já contam. 5% significa 5 eleitores a mais para cada 100 esperados.`,
+  hTurn2:`Votos válidos extras, em porcentagem dos votos que as pesquisas já contam; negativo significa menos. O valor inicial de −0,9% é a variação média dos votos válidos entre o 1º e o 2º turno em 2018 (−2,1%) e 2022 (+0,3%).`,
   lTurnL:`Fatia de Lula entre os eleitores extras`,
-  hTurnL:`50% = os novos eleitores se dividem como cara ou coroa e não mudam nada. Coloque acima de 50% se um comparecimento alto trouxer sobretudo eleitores de Lula.`,
+  hTurnL:`50% = os eleitores que chegam ou deixam de votar se dividem como cara ou coroa e não mudam nada. Coloque acima de 50% se um comparecimento alto trouxer sobretudo eleitores de Lula.`,
+  tHouse:`Corrigir pelos erros passados das pesquisas (2018, 2022)`,
+  hHist:`2º turnos anteriores: últimas pesquisas × resultado`,
   tExcl:`Excluir pesquisas com mais de 10 dias`,
   tLatest:`Só a pesquisa mais recente de cada instituto`,
   tSample:`Ponderar pelo tamanho da amostra`,
   reset:`Voltar ao cenário base`,
   hPolls:`Pesquisas no modelo`,
-  nPolls:`Fatia de votos válidos entre os dois candidatos (brancos, nulos e indecisos excluídos). Só Datafolha, Quaest e Vox Brasil vêm marcados quando a página abre; marque qualquer outra pesquisa, ou um instituto inteiro, para incluí-la. As barras mostram o peso atual de cada pesquisa; linhas esmaecidas estão fora do modelo, e a coluna de peso diz por quê (ex.: "substituída": uma rodada anterior de um instituto que tem pesquisa mais nova — desmarque "Só a pesquisa mais recente de cada instituto" para contá-la). Os links de fonte levam à reportagem de onde veio cada número; consulte o número de registro no <a href="https://pesqele-divulgacao.tse.jus.br/app/pesquisa/listar.xhtml" target="_blank" rel="noopener">PesqEle</a> do TSE ("Número de identificação") — ele guarda a metodologia, não os resultados.`,
+  nPolls:`Fatia de votos válidos entre os dois candidatos, como divulgada (brancos, nulos e indecisos excluídos); o modelo pode reduzir a de Lula pelo erro passado do instituto. Só Datafolha, Quaest e Vox Brasil vêm marcados quando a página abre; marque qualquer outra pesquisa, ou um instituto inteiro, para incluí-la. As barras mostram o peso atual de cada pesquisa; linhas esmaecidas estão fora do modelo, e a coluna de peso diz por quê (ex.: "substituída": uma rodada anterior de um instituto que tem pesquisa mais nova — desmarque "Só a pesquisa mais recente de cada instituto" para contá-la). Os links de fonte levam à reportagem de onde veio cada número; consulte o número de registro no <a href="https://pesqele-divulgacao.tse.jus.br/app/pesquisa/listar.xhtml" target="_blank" rel="noopener">PesqEle</a> do TSE ("Número de identificação") — ele guarda a metodologia, não os resultados.`,
   phSearch:`Buscar instituto, data, registro, fonte…`,
   aSearch:`Buscar pesquisas`,
   lgInst:`Institutos`,
@@ -1104,6 +1165,8 @@ const I18N_PT={
       <p>A fatia de votos válidos de Lula em cada pesquisa entra numa média ponderada. Peso = decaimento por atualidade × (opcional) √tamanho da amostra, limitado a 5.000; todos os institutos são tratados como igualmente precisos. Por padrão, só a pesquisa mais recente de cada instituto conta, para que quem publica a cada poucos dias não ganhe peso extra, e pesquisas divulgadas mais de 10 dias antes da votação ficam de fora. Quando a pesquisa divulgou só votos totais, a fatia válida é calculada como Lula ÷ (Lula + Flávio).</p>
       <h3>2 · Modelar a incerteza</h3>
       <p>O número principal não é o mais importante — a dispersão é. Cada uma das 40.000 eleições simuladas sorteia um resultado de uma distribuição normal centrada na média ponderada (mais qualquer ajuste de virada), com desvio-padrão definido pelo controle de <code>erro das pesquisas</code>. Esse termo de "todas as pesquisas erram juntas" domina porque o erro amostral agregado é desprezível.</p>
+      <h3>Erros passados das pesquisas</h3>
+      <p>Nos 2º turnos de 2018 e 2022, as últimas pesquisas Datafolha e Quaest superestimaram o candidato do PT em 0,5 a 1,2 ponto da disputa entre os dois. Com a correção marcada (o padrão), a fatia de Lula em cada pesquisa é reduzida pelo erro médio do instituto antes de tudo; institutos sem histórico recebem a média. A tabela de pesquisas continua mostrando os números divulgados.</p>
       <h3>Comparecimento e indecisos</h3>
       <p>As fatias de votos válidos supõem que brancos, nulos e indecisos ficam de fora e que quem vota se parece com quem foi entrevistado. Os controles de comparecimento relaxam as duas coisas: uma parte dos brancos, nulos e indecisos pode votar, dividida como você escolher, e podem chegar eleitores extras, também divididos como você escolher. O resultado desloca a média de Lula antes do controle de virada, em todos os modelos da página.</p>
       <h3>3 · Contar</h3>
@@ -1149,10 +1212,11 @@ function setLang(l){
   try{ const u=new URL(location.href); u.searchParams.set('lang',l); history.replaceState(null,'',u); }catch(e){}
   applyStatic();
   POLLS.forEach(p=>p.released=fmtDate(p.rel));
-  setAsof(); syncInputs(); if(POLLS.length) render();
+  setAsof(); renderHistory(); syncInputs(); if(POLLS.length) render();
 }
 document.querySelectorAll('.lang button').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
 applyStatic();
+renderHistory();
 boot();
 </script>
 </body>
