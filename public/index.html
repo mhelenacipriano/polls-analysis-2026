@@ -118,6 +118,7 @@ body{margin:0;font-size:14px}
 
   /* ---- distribution ---- */
   .dist,.trend{padding:18px 16px 14px}
+  .trend .ttog{margin:2px 4px 12px}
   .dist h2,.trend h2{font-size:15px;padding:0 4px}
   .dist .note,.trend .note{font-size:12.5px;color:var(--muted);padding:3px 4px 10px}
   .trend .stat{background:var(--surface-2)}
@@ -331,7 +332,8 @@ body{margin:0;font-size:14px}
 
   <section class="card trend">
     <h2 data-i18n="hTrend">Trend to election day</h2>
-    <p class="note" data-i18n="nTrend">What happens if the recent movement in the checked polls carries on until the vote. Each pollster is compared only with itself, so a firm that always runs high for one candidate doesn't fake a trend. Uses every checked poll, including older waves from the same pollster and polls set aside by the 10-day rule. Lines join polls from the same pollster.</p>
+    <p class="note" data-i18n="nTrend">How Lula's valid-vote share has moved over the campaign, and where a straight-line trend points for 25 Oct. Each pollster is compared only with itself, so a house lean can't fake a trend.</p>
+    <label class="tog ttog"><input type="checkbox" id="trendAll"><span data-i18n="tTrendAll">Measure from all pollsters (house-adjusted) — stronger estimate</span></label>
     <div class="chartwrap"><canvas id="trendChart" data-i18n-attr="aria-label:aTrend" aria-label="Lula's valid-vote share in the checked polls by release date, with the trend line projected to 25 October"></canvas></div>
     <div class="legend">
       <span data-i18n="lgLahead"><span class="dot" style="background:var(--lula)"></span>poll with Lula ahead</span>
@@ -539,7 +541,7 @@ const HIST_CONV=Math.round(HISTORY.reduce((a,h)=>a+h.conv,0)/HISTORY.length/5)*5
 // Lula's share as the model reads it: the published figure, minus the pollster's past miss when the correction is on.
 const LS=p=>p.lula-(S.house?houseErr(p.name):0);
 
-const BASE = {sigma:2.0, bias:0, hl:5, nweight:true, latestOnly:true, exclOld:true, house:false,
+const BASE = {sigma:2.0, bias:0, hl:5, nweight:true, latestOnly:true, exclOld:true, house:false, trendAll:true,
   pool:8, conv:HIST_CONV, convL:50, turn:HIST_TURN, turnL:50};   // turnout defaults come from 2018 and 2022
 let S = {...BASE};
 const PRESETS = {
@@ -716,6 +718,7 @@ function normCdf(z){
 // The trend needs history, so it also keeps polls the 10-day rule set aside; polls unticked by hand stay out.
 const trendPolls=()=>POLLS.filter(p=>p.on||OLD_OFF.has(p.id));
 function trend(agg){
+  if(S.trendAll) return trendAllField();
   const on=trendPolls(), groups={};
   on.forEach(p=>(groups[p.name]=groups[p.name]||[]).push(p));
   let sxx=0,sxy=0,nObs=0,nGroups=0; const repeat=[];
@@ -746,6 +749,7 @@ function trend(agg){
 }
 const tcanvas=$('trendChart'); const tctx=tcanvas.getContext('2d');
 function drawTrend(tr){
+  if(S.trendAll){ drawTrendAll(tr); return; }
   const dpr=Math.min(2,window.devicePixelRatio||1);
   const cssW=tcanvas.clientWidth||600, cssH=Math.max(200,Math.round(cssW*0.42));
   tcanvas.width=cssW*dpr; tcanvas.height=cssH*dpr;
@@ -791,12 +795,70 @@ function drawTrend(tr){
   tctx.setLineDash([5,4]); tctx.beginPath(); tctx.moveTo(X(dMin),Y(at(dMin))); tctx.lineTo(X(0),Y(tr.proj)); tctx.stroke(); tctx.setLineDash([]);
   tctx.fillStyle=fg; tctx.beginPath(); tctx.arc(X(0),Y(tr.proj),4.5,0,2*Math.PI); tctx.fill();
 }
+// All pollsters, fixed effects: each pollster compared only with itself, so house leans
+// cancel and every wave counts. Projects the field's average to election day.
+function trendAllField(){
+  const groups={}; POLLS.forEach(p=>(groups[p.name]=groups[p.name]||[]).push(p));
+  let sxx=0,sxy=0,nObs=0,nG=0; const repeat=[], sample=[], mean={};
+  for(const [name,ps] of Object.entries(groups)){
+    if(!(ps.length>1 && ps.some(p=>fieldEnd(p)!==fieldEnd(ps[0])))) continue;
+    repeat.push(name); sample.push(...ps);
+    const tm=ps.reduce((a,p)=>a+fieldEnd(p),0)/ps.length, ym=ps.reduce((a,p)=>a+p.lula,0)/ps.length;
+    mean[name]=ym;
+    ps.forEach(p=>{ sxx+=(fieldEnd(p)-tm)**2; sxy+=(fieldEnd(p)-tm)*(p.lula-ym); });
+    nObs+=ps.length; nG++;
+  }
+  const dof=nObs-nG-1;
+  if(!repeat.length||sxx===0||dof<1) return {ok:false,all:true,repeat};
+  const b=sxy/sxx;
+  let rss=0;
+  for(const name of repeat){ const ps=groups[name];
+    ps.forEach(p=>{ rss+=((p.lula-mean[name])-b*(fieldEnd(p)-( ps.reduce((a,q)=>a+fieldEnd(q),0)/ps.length )))**2; }); }
+  const se=Math.sqrt(rss/dof/sxx);
+  const tq=dof<=10?[12.71,4.30,3.18,2.78,2.57,2.45,2.36,2.31,2.26,2.23][dof-1]:2.03;
+  const perDay=-b;
+  const grand=sample.reduce((a,p)=>a+p.lula,0)/sample.length;
+  const dbar=sample.reduce((a,p)=>a+fieldEnd(p),0)/sample.length;
+  const off=(adjust(grand)-grand)+S.bias;          // turnout + swing settings, as one shift
+  const lineAt=d=>grand+perDay*(dbar-d)+off;
+  const proj=lineAt(0), sd=Math.sqrt(S.sigma**2+(dbar*se*tq/1.96)**2);
+  const adj=sample.map(p=>({d:fieldEnd(p), y:p.lula-mean[p.name]+grand+off}));
+  return {ok:true,all:true,repeat,perDay,se,tq,dof,tbar:dbar,grandRaw:grand+off,proj,sd,
+          pL:1-normCdf((50-proj)/sd),nObs,adj,lineAt};
+}
+function drawTrendAll(tr){
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  const W=tcanvas.clientWidth||600, H=Math.max(200,Math.round(W*0.42));
+  tcanvas.width=W*dpr; tcanvas.height=H*dpr; tctx.setTransform(dpr,0,0,dpr,0,0); tctx.clearRect(0,0,W,H);
+  if(!tr.ok||!tr.adj.length) return;
+  const x0=40,x1=W-14,y0=H-26,y1=12;
+  const ds=tr.adj.map(a=>a.d), dMax=Math.max(...ds)+0.5, dMin=Math.min(...ds);
+  const ys=tr.adj.map(a=>a.y).concat([50,tr.proj,tr.lineAt(dMax)]);
+  let lo=Math.floor(Math.min(...ys)-0.5), hi=Math.ceil(Math.max(...ys)+0.5); lo=Math.max(40,lo); hi=Math.min(60,hi);
+  const X=d=>x0+(dMax-d)/dMax*(x1-x0), Y=v=>y0-(Math.max(lo,Math.min(hi,v))-lo)/(hi-lo)*(y0-y1);
+  const fg=cssv('--fg'),line=cssv('--line'),faint=cssv('--faint'),muted=cssv('--muted');
+  tctx.font='11px "IBM Plex Mono",monospace';
+  tctx.textAlign='right'; tctx.textBaseline='middle';
+  const step=hi-lo>8?2:1;
+  for(let v=Math.ceil(lo/step)*step;v<=hi;v+=step){ tctx.strokeStyle=line;tctx.globalAlpha=.5;tctx.lineWidth=1;
+    tctx.beginPath();tctx.moveTo(x0,Y(v));tctx.lineTo(x1,Y(v));tctx.stroke();tctx.globalAlpha=1;tctx.fillStyle=faint;tctx.fillText(v+'%',x0-6,Y(v)); }
+  tctx.textBaseline='top';
+  const xstep=dMax>12?4:2;
+  for(let d=0;d<=dMax;d+=xstep){ tctx.fillStyle=faint;tctx.textAlign=d===0?'right':'center';tctx.fillText((25-Math.round(d))+T(' Oct',' out'),X(d),y0+6); }
+  tctx.strokeStyle=fg;tctx.lineWidth=1.5;tctx.setLineDash([4,4]);tctx.beginPath();tctx.moveTo(x0,Y(50));tctx.lineTo(x1,Y(50));tctx.stroke();tctx.setLineDash([]);
+  tctx.globalAlpha=.7;
+  tr.adj.forEach(a=>{ tctx.fillStyle=a.y>50?cssv('--lula'):a.y<50?cssv('--flavio'):muted; tctx.beginPath();tctx.arc(X(a.d),Y(a.y),3,0,2*Math.PI);tctx.fill(); });
+  tctx.globalAlpha=1;
+  tctx.strokeStyle=fg;tctx.lineWidth=2.2;tctx.beginPath();tctx.moveTo(X(dMax),Y(tr.lineAt(dMax)));tctx.lineTo(X(dMin),Y(tr.lineAt(dMin)));tctx.stroke();
+  tctx.setLineDash([5,4]);tctx.beginPath();tctx.moveTo(X(dMin),Y(tr.lineAt(dMin)));tctx.lineTo(X(0),Y(tr.proj));tctx.stroke();tctx.setLineDash([]);
+  tctx.fillStyle=fg;tctx.beginPath();tctx.arc(X(0),Y(tr.proj),4.5,0,2*Math.PI);tctx.fill();
+}
 function renderTrend(agg){
   const clear=msg=>{ ['tSlope','tProj','tOdds'].forEach(id=>$(id).textContent='—'); $('tNote').textContent=msg; };
   if(!agg){ drawTrend({ok:false}); clear(T('No polls selected.','Nenhuma pesquisa selecionada.')); return; }
   const tr=trend(agg); drawTrend(tr);
-  if(!tr.ok){ clear(T('Not enough to measure a trend: it needs at least one pollster with two checked polls released on different days. Tick older waves in the table.',
-    'Dados insuficientes para medir uma tendência: é preciso pelo menos um instituto com duas pesquisas marcadas, divulgadas em dias diferentes. Marque rodadas anteriores na tabela.')); return; }
+  if(!tr.ok){ clear(T('Not enough to measure a trend: it needs at least one pollster with two polls on different days.',
+    'Dados insuficientes para medir uma tendência: é preciso ao menos um instituto com duas pesquisas em dias diferentes.')); return; }
   const who=v=>v>=0?'Lula':'Flávio', col=v=>v>=0?'--lula':'--flavio';
   const pd=tr.perDay, pL=Math.round(tr.pL*100);
   $('tSlope').innerHTML=`<span style="color:var(${col(pd)})">${pd>=0?'+':'−'}${fmtN(Math.abs(pd),2)}</span> <small>${T('pts/day','pts/dia')} ${who(pd)} · ±${fmtN(tr.se,2)}</small>`;
@@ -804,15 +866,27 @@ function renderTrend(agg){
   $('tOdds').innerHTML=`<span style="color:var(--lula)">${pL}%</span> <small>Lula</small> · <span style="color:var(--flavio)">${100-pL}%</span> <small>Flávio</small>`;
   const sig=Math.abs(pd)<tr.tq*tr.se;
   const nR=tr.repeat.length, names=tr.repeat.map(esc).join(', ');
-  $('tNote').innerHTML=T(
-    `Measured from ${nR} pollster${nR>1?'s':''} with repeat polls (${names}). `+
-    `The model's average reflects polls about ${fmt1(tr.tbar)} days old on average, so the trend is carried forward that many days to 25 Oct. `+
-    (sig?`<b>Given how few repeat polls there are, the movement is not clearly different from no change.</b> `:`The movement is clearly different from no change (95% level), though a short trend can still stall. `)+
-    `Odds combine the polling-error slider (±${fmt1(S.sigma)} pts) with the uncertainty in the trend itself. Late trends often stall or reverse; treat this as a what-if, not a forecast.`,
-    `Medida a partir de ${nR} instituto${nR>1?'s':''} com pesquisas repetidas (${names}). `+
-    `A média do modelo reflete pesquisas com cerca de ${fmt1(tr.tbar)} dias, em média, então a tendência é projetada por esse número de dias até 25/10. `+
-    (sig?`<b>Com tão poucas pesquisas repetidas, o movimento não se distingue claramente de nenhuma mudança.</b> `:`O movimento é claramente diferente de nenhuma mudança (nível de 95%), embora uma tendência curta ainda possa parar. `)+
-    `As chances combinam o controle de erro das pesquisas (±${fmt1(S.sigma)} pts) com a incerteza da própria tendência. Tendências de última hora costumam parar ou se inverter; trate isto como um "e se", não como uma previsão.`);
+  if(tr.all){
+    $('tNote').innerHTML=T(
+      `Measured across all ${nR} pollsters that have repeat polls — ${tr.nObs} polls in all — each compared only with itself, so house leans cancel out (a fixed-effects regression). `+
+      (sig?`The movement is small next to its uncertainty. `:`<b>The movement is clearly different from no change (95% confidence).</b> `)+
+      `The field averaged ${fmt1(tr.grandRaw)}% for Lula about ${fmt1(tr.tbar)} days out; at this rate that reaches <b>${fmt1(tr.proj)}%</b> on 25 Oct. `+
+      `Odds combine the polling-error slider (±${fmt1(S.sigma)} pts) with the trend's own uncertainty. It assumes a straight-line trend holds to the vote — a late stall or reversal is still possible. Dots are each poll with its pollster's house lean removed.`,
+      `Medida com todos os ${nR} institutos que têm pesquisas repetidas — ${tr.nObs} pesquisas no total — cada um comparado só consigo mesmo, para que as tendências de casa se anulem (regressão de efeitos fixos). `+
+      (sig?`O movimento é pequeno diante da sua incerteza. `:`<b>O movimento é claramente diferente de nenhuma mudança (95% de confiança).</b> `)+
+      `O conjunto teve média de ${fmt1(tr.grandRaw)}% para Lula cerca de ${fmt1(tr.tbar)} dias antes; nesse ritmo chega a <b>${fmt1(tr.proj)}%</b> em 25/10. `+
+      `As chances combinam o controle de erro (±${fmt1(S.sigma)} pts) com a incerteza da tendência. Supõe uma tendência linear até a votação — uma parada ou reversão de última hora ainda é possível. Os pontos são cada pesquisa com a tendência de casa do instituto removida.`);
+  } else {
+    $('tNote').innerHTML=T(
+      `Measured from ${nR} pollster${nR>1?'s':''} with repeat polls (${names}), among the ticked polls only. `+
+      `The average reflects polls about ${fmt1(tr.tbar)} days old, so the trend is carried forward that many days to 25 Oct. `+
+      (sig?`<b>With so few repeat polls, the movement is not clearly different from no change</b> — tick “all pollsters” above for a stronger estimate. `:`The movement is clearly different from no change (95% level), though a short trend can still stall. `)+
+      `Odds combine the polling-error slider (±${fmt1(S.sigma)} pts) with the trend's uncertainty. Treat this as a what-if, not a forecast.`,
+      `Medida a partir de ${nR} instituto${nR>1?'s':''} com pesquisas repetidas (${names}), só entre as pesquisas marcadas. `+
+      `A média reflete pesquisas com cerca de ${fmt1(tr.tbar)} dias, então a tendência é projetada por esse número de dias até 25/10. `+
+      (sig?`<b>Com tão poucas pesquisas repetidas, o movimento não se distingue de nenhuma mudança</b> — marque “todos os institutos” acima para uma estimativa mais forte. `:`O movimento é claramente diferente de nenhuma mudança (nível de 95%), embora uma tendência curta ainda possa parar. `)+
+      `As chances combinam o controle de erro (±${fmt1(S.sigma)} pts) com a incerteza da tendência. Trate isto como um "e se", não como uma previsão.`);
+  }
 }
 // ---------- model comparison ----------
 // Student-t with 4 degrees of freedom has a closed-form CDF.
@@ -1128,7 +1202,7 @@ $('selNone').addEventListener('click',()=>setShown(false));
 // ---------- controls wiring ----------
 function syncInputs(){
   $('sigma').value=S.sigma; $('bias').value=S.bias; $('hl').value=S.hl;
-  $('nweight').checked=S.nweight; $('house').checked=S.house;
+  $('nweight').checked=S.nweight; $('house').checked=S.house; $('trendAll').checked=S.trendAll;
   $('latestOnly').checked=S.latestOnly; $('exclOld').checked=S.exclOld;
   $('sigmaV').textContent='±'+fmt1(S.sigma)+' pts';
   $('biasV').textContent=(S.bias>0?'+':'')+fmt1(S.bias)+' pts'+(S.bias>0?' →Lula':S.bias<0?' →Flávio':'');
@@ -1145,7 +1219,7 @@ function bindRange(id,key){
 }
 bindRange('sigma','sigma');bindRange('bias','bias');bindRange('hl','hl');
 ['pool','conv','convL','turn','turnL'].forEach(k=>bindRange(k,k));
-['nweight','latestOnly','house'].forEach(k=>{
+['nweight','latestOnly','house','trendAll'].forEach(k=>{
   $(k).addEventListener('change',e=>{S[k]=e.target.checked;render();});
 });
 // Ticking "Exclude polls older than 10 days" unticks those polls in the table; unticking it restores
@@ -1230,7 +1304,7 @@ const I18N_PT={
   kRange:`Faixa de 80% · Lula`,
   kMargin:`Margem esperada`,
   hTrend:`Tendência até o dia da eleição`,
-  nTrend:`O que acontece se o movimento recente nas pesquisas marcadas continuar até a votação. Cada instituto é comparado apenas consigo mesmo, então um instituto que sempre dá números altos para um candidato não cria uma tendência falsa. Usa todas as pesquisas marcadas, inclusive rodadas anteriores do mesmo instituto e as deixadas de fora pela regra dos 10 dias. As linhas ligam pesquisas do mesmo instituto.`,
+  nTrend:`Como a fatia de votos válidos de Lula se moveu ao longo da campanha, e para onde aponta uma tendência linear em 25/10. Cada instituto é comparado apenas consigo mesmo, então uma tendência de casa não cria um movimento falso.`,
   aTrend:`Fatia de votos válidos de Lula nas pesquisas marcadas, por data de divulgação, com a linha de tendência projetada até 25 de outubro`,
   lgLahead:`<span class="dot" style="background:var(--lula)"></span>pesquisa com Lula à frente`,
   lgFahead:`<span class="dot" style="background:var(--flavio)"></span>Flávio à frente`,
@@ -1267,6 +1341,7 @@ const I18N_PT={
   lTurnL:`Fatia de Lula entre os eleitores extras`,
   hTurnL:`50% = os eleitores que chegam ou deixam de votar se dividem como cara ou coroa e não mudam nada. Coloque acima de 50% se um comparecimento alto trouxer sobretudo eleitores de Lula.`,
   tHouse:`Corrigir pelos erros passados das pesquisas (2018, 2022)`,
+  tTrendAll:`Medir com todos os institutos (ajustado por casa) — estimativa mais forte`,
   hHist:`2º turnos anteriores: últimas pesquisas × resultado`,
   hBig:`Maiores institutos, pesquisa a pesquisa`,
   nBig:`Todas as pesquisas de 2º turno dos institutos com as maiores amostras, mais Datafolha, Quaest e Vox Brasil. Números de votos válidos como divulgados, sem correção, pelo último dia de campo. Mostra todas as pesquisas deles, independentemente do que está marcado abaixo.`,
