@@ -117,7 +117,12 @@ body{margin:0;font-size:14px}
     border:1px solid var(--line);color:var(--muted);margin-left:6px;vertical-align:middle}
 
   /* ---- distribution ---- */
-  .dist,.trend{padding:18px 16px 14px}
+  .dist,.trend,.over{padding:18px 16px 14px}
+  .over h2{font-size:15px;padding:0 4px}
+  .over .note{font-size:12px;color:var(--faint);padding:3px 4px 0;max-width:62ch}
+  .over #overBody{padding:6px 4px 2px}
+  .over .obig{font-family:var(--font-display);font-weight:700;font-size:clamp(16px,4.5vw,20px);display:flex;flex-wrap:wrap;gap:4px 14px}
+  .over .osub{font-size:12.5px;color:var(--muted);margin-top:6px}
   .trend .ttog{margin:2px 4px 10px}
   .trend .ttog:has(input:disabled){opacity:.45}
   .dist h2,.trend h2{font-size:15px;padding:0 4px}
@@ -314,6 +319,13 @@ body{margin:0;font-size:14px}
     <p class="fav" id="fav">—</p>
   </section>
 
+  <section class="card over">
+    <h2 data-i18n="hOver">Overseas vote (partial, real)</h2>
+    <div id="overBody"></div>
+    <label class="tog ttog"><input type="checkbox" id="overseas"><span data-i18n="tOver">Count it in the model as a poll</span></label>
+    <p class="note" data-i18n="nOver">Real ballots, but Brazilians abroad are ~0.6% of the electorate and vote differently from the country as a whole, so counting this as a poll gives a tiny, unrepresentative slice heavy weight — the headline can move a point or more. It is off by default and does not affect the trend.</p>
+  </section>
+
   <section class="card dist">
     <h2 data-i18n="hDist">Distribution of Lula's valid-vote share</h2>
     <p class="note" data-i18n="nDist">Each simulated election is one draw. Everything right of the 50% line is a Lula win; everything left is a Flávio win.</p>
@@ -498,6 +510,12 @@ body{margin:0;font-size:14px}
 // daysBeforeVote measured from election day, 25 Oct 2026
 // Poll data lives in polls.json (generated from data/polls.csv by scripts/build_dashboard_data.py)
 let POLLS = [];
+// Overseas (abroad) partial result — real votes posted by 25 Oct 14:44 BRT, from g1's tally.
+// Not a poll: the actual ballots of Brazilians voting abroad (~0.6% of the electorate).
+const OVERSEAS={ lula:64264, flavio:54255, countriesL:36, countriesF:12, asOf:'14:44',
+  r1L:157387, r1F:143900,
+  src:'https://g1.globo.com/mundo/noticia/2026/10/25/votacao-no-exterior-confira-os-votos-no-2-turno-entre-lula-e-flavio.ghtml' };
+const REAL=()=>POLLS.filter(p=>!p.special);   // the actual polls (excludes the overseas row)
 
 // ---------- language: English or Brazilian Portuguese ----------
 // Chosen by ?lang=, then the visitor's last choice, then the browser language.
@@ -541,9 +559,9 @@ const houseErr=name=>name in HOUSE?HOUSE[name]:HOUSE_ALL;
 const HIST_TURN=Math.round(TURNOUT.reduce((a,t)=>a+t.change,0)/TURNOUT.length*10)/10;
 const HIST_CONV=Math.round(HISTORY.reduce((a,h)=>a+h.conv,0)/HISTORY.length/5)*5;
 // Lula's share as the model reads it: the published figure, minus the pollster's past miss when the correction is on.
-const LS=p=>p.lula-(S.house?houseErr(p.name):0);
+const LS=p=>p.special?p.lula:p.lula-(S.house?houseErr(p.name):0);
 
-const BASE = {sigma:2.0, bias:0, hl:5, nweight:true, latestOnly:true, exclOld:true, house:false, trendAll:true, trendRecent:false,
+const BASE = {sigma:2.0, bias:0, hl:5, nweight:true, latestOnly:true, exclOld:true, house:false, trendAll:true, trendRecent:false, overseas:false,
   pool:8, conv:HIST_CONV, convL:50, turn:HIST_TURN, turnL:50};   // turnout defaults come from 2018 and 2022
 let S = {...BASE};
 const PRESETS = {
@@ -561,6 +579,7 @@ const cssv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).tri
 
 // ---------- aggregation ----------
 function isActive(p){
+  if(p.special) return S.overseas;   // overseas joins by its own toggle, outside the normal rules
   if(!p.on) return false;
   if(S.latestOnly){
     // keep only the most recent checked poll from this pollster
@@ -1030,10 +1049,10 @@ function fieldEnd(p){                 // last fieldwork day as days before the v
   return Math.round((new Date(2026,9,25)-d)/864e5);
 }
 function bigPollsters(){
-  const maxN={}; POLLS.forEach(p=>{ if(p.nKnown) maxN[p.name]=Math.max(maxN[p.name]||0,p.n); });
+  const maxN={}; REAL().forEach(p=>{ if(p.nKnown) maxN[p.name]=Math.max(maxN[p.name]||0,p.n); });
   const others=Object.keys(maxN).filter(n=>!BIG_PIN.includes(n)).sort((a,b)=>maxN[b]-maxN[a]).slice(0,BIG_MORE);
   return [...BIG_PIN,...others].map(name=>({name,maxN:maxN[name]||0,
-    polls:POLLS.filter(p=>p.name===name).sort((a,b)=>fieldEnd(b)-fieldEnd(a))}));
+    polls:REAL().filter(p=>p.name===name).sort((a,b)=>fieldEnd(b)-fieldEnd(a))}));
 }
 function renderInstGrid(){
   const grid=$('instGrid'); if(!grid) return; grid.innerHTML='';
@@ -1098,6 +1117,7 @@ function render(){
   const wmap={}; let wmax=0;
   if(agg){agg.list.forEach((p,i)=>{wmap[p.id]=agg.w[i];wmax=Math.max(wmax,agg.w[i]);});}
   POLLS.forEach(p=>{
+    if(p.special) return;
     const active=isActive(p);
     const tr=document.createElement('tr'); tr.dataset.id=p.id; if(!active)tr.className='off';
     const wpct=active&&wmax? Math.round(wmap[p.id]/wmax*100):0;
@@ -1128,7 +1148,7 @@ function render(){
     $('fav').textContent=T('No polls selected. Tick at least one poll in the table below.','Nenhuma pesquisa selecionada. Marque pelo menos uma pesquisa na tabela abaixo.');
     ctx.clearRect(0,0,canvas.width,canvas.height); renderTrend(null); renderCompare(null); return;
   }
-  renderTrend(agg); renderCompare(agg);
+  renderTrend(agg); renderCompare(agg); renderOverseas();
   const res=simulate(agg);
   const pL=Math.round(res.pL*100), pF=100-pL;
   $('probL').textContent=pL+'%'; $('probF').textContent=pF+'%';
@@ -1178,15 +1198,15 @@ function applyFilter(){
     tr.innerHTML=`<td colspan="9" class="noresult" style="text-align:left">${T('No polls match this search.','Nenhuma pesquisa corresponde à busca.')}</td>`;
     $('pollBody').appendChild(tr);
   }
-  const on=POLLS.filter(p=>p.on).length;
-  $('pollCount').textContent=T(`${on} of ${POLLS.length} polls selected`+(q?` · ${shown} shown`:''),
-    `${on} de ${POLLS.length} pesquisas selecionadas`+(q?` · ${shown} exibidas`:''));
+  const real=REAL(); const on=real.filter(p=>p.on).length;
+  $('pollCount').textContent=T(`${on} of ${real.length} polls selected`+(q?` · ${shown} shown`:''),
+    `${on} de ${real.length} pesquisas selecionadas`+(q?` · ${shown} exibidas`:''));
   $('selAll').textContent=q?T('Select shown','Marcar exibidas'):T('Select all','Marcar todas');
   $('selNone').textContent=q?T('Unselect shown','Desmarcar exibidas'):T('Unselect all','Desmarcar todas');
   $('selAll').disabled=$('selNone').disabled=(q && !shown);
 }
 function renderInstitutes(){
-  const names=[...new Set(POLLS.map(p=>p.name))].sort((a,b)=>a.localeCompare(b,'pt'));
+  const names=[...new Set(REAL().map(p=>p.name))].sort((a,b)=>a.localeCompare(b,'pt'));
   const box=$('instList'); box.innerHTML='';
   names.forEach(name=>{
     const ps=POLLS.filter(p=>p.name===name), on=ps.filter(p=>p.on).length;
@@ -1200,7 +1220,7 @@ function renderInstitutes(){
     lab.append(cb,t,n); box.appendChild(lab);
   });
 }
-function setShown(on){ const q=query(); POLLS.forEach(p=>{ if(matches(p,q)) p.on=on; }); render(); }
+function setShown(on){ const q=query(); REAL().forEach(p=>{ if(matches(p,q)) p.on=on; }); render(); }
 $('pollSearch').addEventListener('input',applyFilter);
 $('selAll').addEventListener('click',()=>setShown(true));
 $('selNone').addEventListener('click',()=>setShown(false));
@@ -1210,6 +1230,7 @@ function syncInputs(){
   $('sigma').value=S.sigma; $('bias').value=S.bias; $('hl').value=S.hl;
   $('nweight').checked=S.nweight; $('house').checked=S.house; $('trendAll').checked=S.trendAll;
   $('trendRecent').checked=S.trendRecent; $('trendRecent').disabled=!S.trendAll;
+  $('overseas').checked=S.overseas;
   $('latestOnly').checked=S.latestOnly; $('exclOld').checked=S.exclOld;
   $('sigmaV').textContent='±'+fmt1(S.sigma)+' pts';
   $('biasV').textContent=(S.bias>0?'+':'')+fmt1(S.bias)+' pts'+(S.bias>0?' →Lula':S.bias<0?' →Flávio':'');
@@ -1239,6 +1260,7 @@ function setExclOld(v){
   S.exclOld=v;
 }
 $('exclOld').addEventListener('change',e=>{setExclOld(e.target.checked);render();});
+$('overseas').addEventListener('change',e=>{S.overseas=e.target.checked;render();});
 $('presets').addEventListener('click',e=>{
   const p=e.target.dataset.preset; if(!p)return;
   const next={...PRESETS[p]}; S={...next, exclOld:S.exclOld}; setExclOld(next.exclOld); syncInputs(); render();
@@ -1259,6 +1281,11 @@ async function boot(){
     const r = await fetch('polls.json',{cache:'no-store'});
     if(!r.ok) throw new Error(r.status);
     POLLS = (await r.json()).map(p=>({...p, rel:p.released, released:fmtDate(p.released), lula:+(100-p.flavio).toFixed(1), on:true}));
+    const ov=OVERSEAS.lula+OVERSEAS.flavio;
+    POLLS.push({id:'overseas', name:T('Overseas (partial)','Exterior (parcial)'), field:'Oct 25', rel:'2026-10-25',
+      released:fmtDate('2026-10-25'), days:0, n:ov, nKnown:true,
+      flavio:+(100*OVERSEAS.flavio/ov).toFixed(2), lula:+(100*OVERSEAS.lula/ov).toFixed(2),
+      groupA:false, reg:'', src:OVERSEAS.src, note:'', special:'overseas', on:false});
   }catch(e){
     document.getElementById('fav').textContent=T('Could not load polls.json. Run scripts/build_dashboard_data.py and serve the public/ folder over HTTP.',
       'Não foi possível carregar polls.json. Rode scripts/build_dashboard_data.py e sirva a pasta public/ por HTTP.');
@@ -1285,10 +1312,22 @@ function renderHistory(){
     <table><thead><tr><th>Ano</th><th class="num">Votos válidos, 1º turno</th><th class="num">2º turno</th><th class="num">Variação</th></tr></thead><tbody>${trows}</tbody></table>
     <p class="note" style="margin-top:8px">Valores iniciais tirados daqui: comparecimento extra de ${sign(HIST_TURN)}% (a variação média) e ${HIST_CONV}% dos brancos, nulos e indecisos acabando num candidato (a fatia “nenhum” das últimas pesquisas comparada com a de brancos e nulos nos votos: ${HISTORY.map(h=>Math.round(h.conv)+'%').join(', ')}). Fontes: últimas pesquisas pelas tabelas da Wikipédia; resultados e comparecimento pelo TSE.</p>`);
 }
+function renderOverseas(){
+  const el=$('overBody'); if(!el) return;
+  const ov=OVERSEAS.lula+OVERSEAS.flavio, lp=100*OVERSEAS.lula/ov, fp=100*OVERSEAS.flavio/ov;
+  const r1=100*OVERSEAS.r1L/(OVERSEAS.r1L+OVERSEAS.r1F);
+  const lead=v=>`<b>${v}</b>`;
+  el.innerHTML=`<div class="obig"><span style="color:var(--lula)">${lead('Lula '+OVERSEAS.lula.toLocaleString(LOC())+' ('+fmt1(lp)+'%)')}</span>`+
+    `<span style="color:var(--flavio)">Flávio ${OVERSEAS.flavio.toLocaleString(LOC())} (${fmt1(fp)}%)</span></div>`+
+    `<div class="osub">`+T(
+      `Lula leads in ${OVERSEAS.countriesL} countries, Flávio in ${OVERSEAS.countriesF}. Partial tally from g1 as of ${OVERSEAS.asOf} BRT, 25 Oct; the TSE consolidates after 17:00. First round abroad: Lula ${fmt1(r1)}% of the two-way vote — so Lula is up about ${fmt1(lp-r1)} points abroad since then.`,
+      `Lula vence em ${OVERSEAS.countriesL} países, Flávio em ${OVERSEAS.countriesF}. Parcial do g1 às ${OVERSEAS.asOf} (Brasília), 25/10; o TSE consolida após as 17h. No 1º turno no exterior: Lula ${fmt1(r1)}% entre os dois — ou seja, Lula subiu cerca de ${fmt1(lp-r1)} pontos no exterior desde então.`)+
+    `</div>`;
+}
 function setAsof(){
-  if(!POLLS.length) return;
-  const last = POLLS.reduce((a,p)=>p.days<a.days?p:a, POLLS[0]);
-  $('asof').textContent = T(`${POLLS.length} polls · latest released ${last.released}`,`${POLLS.length} pesquisas · última divulgada em ${last.released}`);
+  const real=REAL(); if(!real.length) return;
+  const last = real.reduce((a,p)=>p.days<a.days?p:a, real[0]);
+  $('asof').textContent = T(`${real.length} polls · latest released ${last.released}`,`${real.length} pesquisas · última divulgada em ${last.released}`);
 }
 
 const I18N_PT={
@@ -1350,6 +1389,9 @@ const I18N_PT={
   tHouse:`Corrigir pelos erros passados das pesquisas (2018, 2022)`,
   tTrendAll:`Medir com todos os institutos (ajustado por casa) — estimativa mais forte`,
   tTrendRecent:`Dar mais peso às pesquisas recentes (usa o controle de meia-vida)`,
+  hOver:`Voto no exterior (parcial, real)`,
+  tOver:`Contar no modelo como uma pesquisa`,
+  nOver:`São votos reais, mas os brasileiros no exterior são ~0,6% do eleitorado e votam de forma diferente do país como um todo, então contar isto como pesquisa dá peso grande a uma fatia pequena e não representativa — a manchete pode mexer um ponto ou mais. Vem desmarcado e não afeta a tendência.`,
   hHist:`2º turnos anteriores: últimas pesquisas × resultado`,
   hBig:`Maiores institutos, pesquisa a pesquisa`,
   nBig:`Todas as pesquisas de 2º turno dos institutos com as maiores amostras, mais Datafolha, Quaest e Vox Brasil. Números de votos válidos como divulgados, sem correção, pelo último dia de campo. Mostra todas as pesquisas deles, independentemente do que está marcado abaixo.`,
