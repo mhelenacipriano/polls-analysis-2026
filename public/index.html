@@ -55,6 +55,12 @@ body{margin:0;font-size:14px}
   h1,h2,h3{font-family:var(--font-display);text-wrap:balance;margin:0;font-weight:700;letter-spacing:-.01em}
   .eyebrow{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
     color:var(--faint);margin:0 0 6px}
+  header{position:relative}
+  .lang{position:absolute;top:0;right:0;display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--surface)}
+  .lang button{font:600 11.5px var(--font-mono);letter-spacing:.06em;padding:5px 10px;border:none;background:none;color:var(--muted);cursor:pointer}
+  .lang button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+  .lang button:focus-visible{outline:2px solid var(--flavio);outline-offset:-2px}
+  header .eyebrow{padding-right:92px}
   header h1{font-size:clamp(26px,6vw,38px);font-weight:800;letter-spacing:-.02em}
   .sub{color:var(--muted);font-size:14.5px;margin:8px 0 0;max-width:62ch}
   .disc{font-size:12.5px;color:var(--faint);margin-top:14px;padding:10px 12px;border:1px solid var(--line);
@@ -217,15 +223,16 @@ body{margin:0;font-size:14px}
 <body>
 <div class="wrap">
   <header>
-    <p class="eyebrow">2026 Brazilian Presidential Runoff · Monte Carlo</p>
-    <h1>Can Lula win? — tomorrow's odds</h1>
-    <p class="sub">A probabilistic model of Lula's chance in the October 25 second round against Flávio Bolsonaro, aggregating the public valid-vote polls and simulating 40,000 elections. Move the sliders to test different assumptions about polling error and late swing.</p>
-    <p class="disc"><b>This is a model, not a prediction.</b> The race is a statistical tie; polls can be collectively wrong, as Brazil's 2022 runoff showed. The output is a range of plausible outcomes under assumptions you control — not a forecast of who will win.</p>
+    <div class="lang" role="group" aria-label="Language / Idioma"><button type="button" data-lang="en" lang="en">EN</button><button type="button" data-lang="pt" lang="pt-BR">PT</button></div>
+    <p class="eyebrow" data-i18n="eyebrow">2026 Brazilian Presidential Runoff · Monte Carlo</p>
+    <h1 data-i18n="h1">Can Lula win? — tomorrow's odds</h1>
+    <p class="sub" data-i18n="sub">A probabilistic model of Lula's chance in the October 25 second round against Flávio Bolsonaro, aggregating the public valid-vote polls and simulating 40,000 elections. Move the sliders to test different assumptions about polling error and late swing.</p>
+    <p class="disc" data-i18n="disc"><b>This is a model, not a prediction.</b> The race is a statistical tie; polls can be collectively wrong, as Brazil's 2022 runoff showed. The output is a range of plausible outcomes under assumptions you control — not a forecast of who will win.</p>
   </header>
 
   <section class="card odds">
     <div class="odds-top">
-      <h2>Win probability</h2>
+      <h2 data-i18n="hOdds">Win probability</h2>
       <span class="asof" id="asof">as of 24 Oct 2026 · eve of vote</span>
     </div>
     <div class="names">
@@ -243,108 +250,108 @@ body{margin:0;font-size:14px}
   </section>
 
   <section class="card dist">
-    <h2>Distribution of Lula's valid-vote share</h2>
-    <p class="note">Each simulated election is one draw. Everything right of the 50% line is a Lula win; everything left is a Flávio win.</p>
-    <div class="chartwrap"><canvas id="chart" aria-label="Simulated distribution of Lula's vote share"></canvas></div>
+    <h2 data-i18n="hDist">Distribution of Lula's valid-vote share</h2>
+    <p class="note" data-i18n="nDist">Each simulated election is one draw. Everything right of the 50% line is a Lula win; everything left is a Flávio win.</p>
+    <div class="chartwrap"><canvas id="chart" data-i18n-attr="aria-label:aDist" aria-label="Simulated distribution of Lula's vote share"></canvas></div>
     <div class="legend">
-      <span><span class="dot" style="background:var(--lula)"></span>Lula wins (&gt;50%)</span>
-      <span><span class="dot" style="background:var(--flavio)"></span>Flávio wins (&lt;50%)</span>
-      <span><span class="dot" style="background:var(--muted);width:3px;height:13px;border-radius:1px"></span>median outcome</span>
+      <span data-i18n="lgLwin"><span class="dot" style="background:var(--lula)"></span>Lula wins (&gt;50%)</span>
+      <span data-i18n="lgFwin"><span class="dot" style="background:var(--flavio)"></span>Flávio wins (&lt;50%)</span>
+      <span data-i18n="lgMed"><span class="dot" style="background:var(--muted);width:3px;height:13px;border-radius:1px"></span>median outcome</span>
     </div>
   </section>
 
   <section class="stats">
-    <div class="stat"><div class="k">Central estimate</div><div class="v" id="sCentral">—</div></div>
-    <div class="stat"><div class="k">80% range · Lula</div><div class="v" id="sRange">—</div></div>
-    <div class="stat"><div class="k">Expected margin</div><div class="v" id="sMargin">—</div></div>
+    <div class="stat"><div class="k" data-i18n="kCentral">Central estimate</div><div class="v" id="sCentral">—</div></div>
+    <div class="stat"><div class="k" data-i18n="kRange">80% range · Lula</div><div class="v" id="sRange">—</div></div>
+    <div class="stat"><div class="k" data-i18n="kMargin">Expected margin</div><div class="v" id="sMargin">—</div></div>
   </section>
 
   <section class="card trend">
-    <h2>Trend to election day</h2>
-    <p class="note">What happens if the recent movement in the checked polls carries on until the vote. Each pollster is compared only with itself, so a firm that always runs high for one candidate doesn't fake a trend. Uses every checked poll, including older waves from the same pollster. Lines join polls from the same pollster.</p>
-    <div class="chartwrap"><canvas id="trendChart" aria-label="Lula's valid-vote share in the checked polls by release date, with the trend line projected to 25 October"></canvas></div>
+    <h2 data-i18n="hTrend">Trend to election day</h2>
+    <p class="note" data-i18n="nTrend">What happens if the recent movement in the checked polls carries on until the vote. Each pollster is compared only with itself, so a firm that always runs high for one candidate doesn't fake a trend. Uses every checked poll, including older waves from the same pollster. Lines join polls from the same pollster.</p>
+    <div class="chartwrap"><canvas id="trendChart" data-i18n-attr="aria-label:aTrend" aria-label="Lula's valid-vote share in the checked polls by release date, with the trend line projected to 25 October"></canvas></div>
     <div class="legend">
-      <span><span class="dot" style="background:var(--lula)"></span>poll with Lula ahead</span>
-      <span><span class="dot" style="background:var(--flavio)"></span>Flávio ahead</span>
-      <span><span class="dot" style="background:var(--fg);width:14px;height:3px;border-radius:1px"></span>trend, dashed beyond the latest poll</span>
+      <span data-i18n="lgLahead"><span class="dot" style="background:var(--lula)"></span>poll with Lula ahead</span>
+      <span data-i18n="lgFahead"><span class="dot" style="background:var(--flavio)"></span>Flávio ahead</span>
+      <span data-i18n="lgTrend"><span class="dot" style="background:var(--fg);width:14px;height:3px;border-radius:1px"></span>trend, dashed beyond the latest poll</span>
     </div>
     <div class="tstats">
-      <div class="stat"><div class="k">Movement per day</div><div class="v" id="tSlope">—</div></div>
-      <div class="stat"><div class="k">Projected for 25 Oct · Lula</div><div class="v" id="tProj">—</div></div>
-      <div class="stat"><div class="k">Odds if the trend holds</div><div class="v" id="tOdds">—</div></div>
+      <div class="stat"><div class="k" data-i18n="kSlope">Movement per day</div><div class="v" id="tSlope">—</div></div>
+      <div class="stat"><div class="k" data-i18n="kProj">Projected for 25 Oct · Lula</div><div class="v" id="tProj">—</div></div>
+      <div class="stat"><div class="k" data-i18n="kOdds">Odds if the trend holds</div><div class="v" id="tOdds">—</div></div>
     </div>
     <p class="note" id="tNote" style="margin-top:10px">—</p>
   </section>
 
   <section class="card compare">
-    <h2>Other ways to read the same polls</h2>
-    <p class="note">The same checked polls and settings, run through different probability models. Hover or tap <span class="info-i" aria-hidden="true">i</span> for how each one works and where it goes wrong; open ▸ to see its curve. <b>Precision</b> is the width of the 80% range: narrower means more certain, not more accurate. No model can be scored until the result is in.</p>
+    <h2 data-i18n="hCmp">Other ways to read the same polls</h2>
+    <p class="note" data-i18n="nCmp">The same checked polls and settings, run through different probability models. Hover or tap <span class="info-i" aria-hidden="true">i</span> for how each one works and where it goes wrong; open ▸ to see its curve. <b>Precision</b> is the width of the 80% range: narrower means more certain, not more accurate. No model can be scored until the result is in.</p>
     <table class="cmp">
-      <thead><tr><th>Model</th><th class="num">Lula share</th><th class="num">Lula wins</th><th class="num">Flávio wins</th><th class="num rng">80% range</th><th>Precision</th></tr></thead>
+      <thead data-i18n="thCmp"><tr><th>Model</th><th class="num">Lula share</th><th class="num">Lula wins</th><th class="num">Flávio wins</th><th class="num rng">80% range</th><th>Precision</th></tr></thead>
       <tbody id="cmpBody"></tbody>
     </table>
   </section>
 
   <section class="card controls">
-    <h2>Model assumptions</h2>
-    <p class="lead">Scenarios set the sliders; adjust from there.</p>
+    <h2 data-i18n="hCtl">Model assumptions</h2>
+    <p class="lead" data-i18n="nCtl">Scenarios set the sliders; adjust from there.</p>
     <div class="presets" id="presets">
-      <button class="preset" data-preset="base">Base case</button>
-      <button class="preset" data-preset="tight">Polls dead-on</button>
-      <button class="preset" data-preset="miss2022">2022-style miss (polls over-read Lula)</button>
-      <button class="preset" data-preset="lulaswing">Late Lula swing</button>
-      <button class="preset" data-preset="noise">High uncertainty</button>
+      <button class="preset" data-preset="base" data-i18n="prBase">Base case</button>
+      <button class="preset" data-preset="tight" data-i18n="prTight">Polls dead-on</button>
+      <button class="preset" data-preset="miss2022" data-i18n="prMiss">2022-style miss (polls over-read Lula)</button>
+      <button class="preset" data-preset="lulaswing" data-i18n="prSwing">Late Lula swing</button>
+      <button class="preset" data-preset="noise" data-i18n="prNoise">High uncertainty</button>
     </div>
 
     <div class="ctl">
-      <div class="row"><label for="sigma">Polling error (how far off polls could collectively be)</label><span class="val" id="sigmaV"></span></div>
+      <div class="row"><label for="sigma" data-i18n="lSigma">Polling error (how far off polls could collectively be)</label><span class="val" id="sigmaV"></span></div>
       <input type="range" id="sigma" min="0.5" max="4" step="0.1">
-      <p class="hint">Standard deviation on Lula's final vote share, in points (the margin moves twice as much). The dominant source of uncertainty — sampling error is tiny once polls are pooled. ~2 pts (±4 at 95%) matches recent Brazilian runoff accuracy.</p>
+      <p class="hint" data-i18n="hSigma">Standard deviation on Lula's final vote share, in points (the margin moves twice as much). The dominant source of uncertainty — sampling error is tiny once polls are pooled. ~2 pts (±4 at 95%) matches recent Brazilian runoff accuracy.</p>
     </div>
 
     <div class="ctl">
-      <div class="row"><label for="bias">Late swing / house-effect adjustment</label><span class="val" id="biasV"></span></div>
+      <div class="row"><label for="bias" data-i18n="lBias">Late swing / house-effect adjustment</label><span class="val" id="biasV"></span></div>
       <input type="range" id="bias" min="-4" max="4" step="0.1">
-      <p class="hint">Shifts the whole distribution. Positive = toward Lula; negative = toward Flávio (e.g. polls under-counting the right, as in 2022). Zero = take the poll average at face value.</p>
+      <p class="hint" data-i18n="hBias">Shifts the whole distribution. Positive = toward Lula; negative = toward Flávio (e.g. polls under-counting the right, as in 2022). Zero = take the poll average at face value.</p>
     </div>
 
     <div class="ctl">
-      <div class="row"><label for="hl">Recency half-life</label><span class="val" id="hlV"></span></div>
+      <div class="row"><label for="hl" data-i18n="lHl">Recency half-life</label><span class="val" id="hlV"></span></div>
       <input type="range" id="hl" min="1" max="14" step="0.5">
-      <p class="hint">How fast older polls lose weight. A 5-day half-life means a poll from 5 days ago counts half as much as today's.</p>
+      <p class="hint" data-i18n="hHl">How fast older polls lose weight. A 5-day half-life means a poll from 5 days ago counts half as much as today's.</p>
     </div>
 
     <div class="ctl">
       <div class="toggles">
-        <label class="tog"><input type="checkbox" id="exclOld">Exclude polls older than 10 days</label>
-        <label class="tog"><input type="checkbox" id="latestOnly">Latest poll per pollster only</label>
-        <label class="tog"><input type="checkbox" id="nweight">Weight by sample size</label>
+        <label class="tog"><input type="checkbox" id="exclOld"><span data-i18n="tExcl">Exclude polls older than 10 days</span></label>
+        <label class="tog"><input type="checkbox" id="latestOnly"><span data-i18n="tLatest">Latest poll per pollster only</span></label>
+        <label class="tog"><input type="checkbox" id="nweight"><span data-i18n="tSample">Weight by sample size</span></label>
       </div>
     </div>
-    <button class="reset" id="reset">Reset to base case</button>
+    <button class="reset" id="reset" data-i18n="reset">Reset to base case</button>
   </section>
 
   <section class="card polls">
-    <h2>Polls in the model</h2>
-    <p class="note">Valid-vote two-way share (blank, null and undecided excluded). Only Datafolha, Quaest and Vox Brasil are ticked when the page opens; tick any other poll, or a whole institute, to add it. Bars show each poll's current weight; dimmed rows are out of the model, and the weight column says why (e.g. "replaced": an older wave from a pollster with a newer poll — untick "Latest poll per pollster only" to count it). Source links go to the report each number was taken from; look up a registration number in the TSE's <a href="https://pesqele-divulgacao.tse.jus.br/app/pesquisa/listar.xhtml" target="_blank" rel="noopener">PesqEle</a> ("Número de identificação") — it holds the method, not the results.</p>
+    <h2 data-i18n="hPolls">Polls in the model</h2>
+    <p class="note" data-i18n="nPolls">Valid-vote two-way share (blank, null and undecided excluded). Only Datafolha, Quaest and Vox Brasil are ticked when the page opens; tick any other poll, or a whole institute, to add it. Bars show each poll's current weight; dimmed rows are out of the model, and the weight column says why (e.g. "replaced": an older wave from a pollster with a newer poll — untick "Latest poll per pollster only" to count it). Source links go to the report each number was taken from; look up a registration number in the TSE's <a href="https://pesqele-divulgacao.tse.jus.br/app/pesquisa/listar.xhtml" target="_blank" rel="noopener">PesqEle</a> ("Número de identificação") — it holds the method, not the results.</p>
     <div class="ptools">
-      <input type="search" id="pollSearch" placeholder="Search pollster, date, registration, source…" aria-label="Search polls" autocomplete="off">
+      <input type="search" id="pollSearch" data-i18n-attr="placeholder:phSearch;aria-label:aSearch" placeholder="Search pollster, date, registration, source…" aria-label="Search polls" autocomplete="off">
       <button type="button" class="preset" id="selAll">Select all</button>
       <button type="button" class="preset" id="selNone">Unselect all</button>
       <span class="pcount" id="pollCount" aria-live="polite"></span>
-      <fieldset class="insts"><legend>Institutes</legend><div id="instList"></div></fieldset>
+      <fieldset class="insts"><legend data-i18n="lgInst">Institutes</legend><div id="instList"></div></fieldset>
     </div>
     <div class="tbl-scroll">
       <table>
-        <thead><tr><th>Pollster</th><th>Fieldwork</th><th>Released</th><th>Sample</th><th>Lula</th><th>Flávio</th><th>Weight</th><th>TSE reg.</th><th>Source</th></tr></thead>
+        <thead data-i18n="thPolls"><tr><th>Pollster</th><th>Fieldwork</th><th>Released</th><th>Sample</th><th>Lula</th><th>Flávio</th><th>Weight</th><th>TSE reg.</th><th>Source</th></tr></thead>
         <tbody id="pollBody"></tbody>
       </table>
     </div>
   </section>
 
   <details>
-    <summary>How the model works</summary>
-    <div class="method">
+    <summary data-i18n="sumMethod">How the model works</summary>
+    <div class="method" data-i18n="method">
       <p>The model treats the runoff as a two-way race on <b>valid votes</b> and asks: given the polls, what range of outcomes is plausible once we admit that polls can be wrong together?</p>
       <h3>1 · Aggregate</h3>
       <p>Each poll's Lula valid-vote share is pooled into a weighted average. Weight = recency decay × (optional) √sample size, capped at 5,000; every pollster is treated as equally accurate. By default only each pollster's latest poll counts, so a firm that publishes every few days doesn't get extra say, and polls released more than 10 days before the vote are left out. Where a poll reported only total votes, the valid share is computed as Lula ÷ (Lula + Flávio).</p>
@@ -356,14 +363,14 @@ body{margin:0;font-size:14px}
       <ul>
         <li>Garbage in, garbage out: if the polls share a systematic bias, so will this.</li>
         <li>No state-level or electoral-geography modeling — it's a national popular-vote runoff, so one number decides it.</li>
-        <li>Most of the Oct 24 eve-of-vote batch (Datafolha, Quaest, AtlasIntel, Nexus, Palver and others) was still unpublished at 14:00 on Oct 24; only CNT/MDA is in.</li>
+        <li>Palver, Instituto França and Brazil Economy/Colectta released eve-of-vote polls, but their figures weren't found in any source, so they're not in the model.</li>
         <li>Pollsters that release only total votes or use different question wording aren't adjusted for house effects.</li>
         <li>Normality is an approximation; real polling errors can be fat-tailed.</li>
       </ul>
     </div>
   </details>
 
-  <footer>
+  <footer data-i18n="footer">
     Poll data: <code>data/polls.csv</code> in the repository, with a source link for every row.<br>Figures are modeled estimates, not official results. 
   </footer>
 </div>
@@ -374,7 +381,25 @@ body{margin:0;font-size:14px}
 // daysBeforeVote measured from election day, 25 Oct 2026
 // Poll data lives in polls.json (generated from data/polls.csv by scripts/build_dashboard_data.py)
 let POLLS = [];
-const fmtDate = iso => new Date(iso+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+
+// ---------- language: English or Brazilian Portuguese ----------
+// Chosen by ?lang=, then the visitor's last choice, then the browser language.
+const LANGS=['en','pt'];
+let LANG=(()=>{
+  const q=new URLSearchParams(location.search).get('lang'); if(LANGS.includes(q)) return q;
+  try{ const v=localStorage.getItem('lang'); if(LANGS.includes(v)) return v; }catch(e){}
+  return (navigator.language||'').toLowerCase().startsWith('pt')?'pt':'en';
+})();
+const T=(en,pt)=>LANG==='pt'?pt:en;
+const LOC=()=>LANG==='pt'?'pt-BR':'en-US';
+const MON_PT=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const MON_EN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const fmtDate=iso=>{ const d=new Date(iso+'T12:00:00');
+  return LANG==='pt'?`${d.getDate()} ${MON_PT[d.getMonth()]}`:`${MON_EN[d.getMonth()]} ${d.getDate()}`; };
+// "Oct 20-22" from the CSV becomes "20–22 out" in Portuguese
+const fmtField=f=>{ if(LANG!=='pt'||f==='—') return f;
+  const m=/^([A-Z][a-z]{2}) (.+)$/.exec(f), i=m?MON_EN.indexOf(m[1]):-1;
+  return i>=0&&!/[A-Za-z]/.test(m[2])?`${m[2]} ${MON_PT[i]}`:f.replace(/[A-Z][a-z]{2}/g,x=>MON_PT[MON_EN.indexOf(x)]||x); };
 
 const BASE = {sigma:2.0, bias:0, hl:5, nweight:true, latestOnly:true, exclOld:true};
 let S = {...BASE};
@@ -387,7 +412,8 @@ const PRESETS = {
 };
 
 const $=id=>document.getElementById(id);
-const fmt1=x=>x.toFixed(1);
+const fmtN=(x,d)=>x.toLocaleString(LOC(),{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmt1=x=>fmtN(x,1);
 const cssv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 
 // ---------- aggregation ----------
@@ -402,9 +428,11 @@ function isActive(p){
 }
 // Why an inactive poll is out of the model, for the weight column.
 function whyOff(p){
-  if(!p.on && OLD_OFF.has(p.id)) return {txt:'over 10 days', tip:'Released more than 10 days before the vote. Untick "Exclude polls older than 10 days" to count it.'};
-  if(!p.on) return {txt:'unchecked', tip:'You unchecked this poll.'};
-  return {txt:'replaced', tip:'A newer poll from this pollster replaces it while "Latest poll per pollster only" is on.'};
+  if(!p.on && OLD_OFF.has(p.id)) return T({txt:'over 10 days', tip:'Released more than 10 days before the vote. Untick "Exclude polls older than 10 days" to count it.'},
+    {txt:'mais de 10 dias', tip:'Divulgada mais de 10 dias antes da votação. Desmarque "Excluir pesquisas com mais de 10 dias" para contá-la.'});
+  if(!p.on) return T({txt:'unchecked', tip:'You unchecked this poll.'},{txt:'desmarcada', tip:'Você desmarcou esta pesquisa.'});
+  return T({txt:'replaced', tip:'A newer poll from this pollster replaces it while "Latest poll per pollster only" is on.'},
+    {txt:'substituída', tip:'Uma pesquisa mais nova deste instituto a substitui enquanto "Só a pesquisa mais recente de cada instituto" estiver marcado.'});
 }
 function activePolls(){ return POLLS.filter(isActive); }
 function weights(list){
@@ -590,7 +618,7 @@ function drawTrend(tr){
   // x ticks: dates (days before 25 Oct)
   tctx.textAlign='center'; tctx.textBaseline='top';
   const xstep=dMax>12?4:2;
-  for(let d=0; d<=dMax; d+=xstep){ tctx.fillStyle=faint; tctx.textAlign=d===0?'right':'center'; tctx.fillText(d===0?'25 Oct':(25-d)+' Oct', X(d), y0+6); }
+  for(let d=0; d<=dMax; d+=xstep){ tctx.fillStyle=faint; tctx.textAlign=d===0?'right':'center'; tctx.fillText((25-d)+T(' Oct',' out'), X(d), y0+6); }
   // 50% line
   tctx.strokeStyle=fg; tctx.lineWidth=1.5; tctx.setLineDash([4,4]);
   tctx.beginPath(); tctx.moveTo(x0,Y(50)); tctx.lineTo(x1,Y(50)); tctx.stroke(); tctx.setLineDash([]);
@@ -613,19 +641,26 @@ function drawTrend(tr){
 }
 function renderTrend(agg){
   const clear=msg=>{ ['tSlope','tProj','tOdds'].forEach(id=>$(id).textContent='—'); $('tNote').textContent=msg; };
-  if(!agg){ drawTrend({ok:false}); clear('No polls selected.'); return; }
+  if(!agg){ drawTrend({ok:false}); clear(T('No polls selected.','Nenhuma pesquisa selecionada.')); return; }
   const tr=trend(agg); drawTrend(tr);
-  if(!tr.ok){ clear('Not enough to measure a trend: it needs at least one pollster with two checked polls released on different days. Untick "Exclude polls older than 10 days" or tick older waves in the table.'); return; }
+  if(!tr.ok){ clear(T('Not enough to measure a trend: it needs at least one pollster with two checked polls released on different days. Untick "Exclude polls older than 10 days" or tick older waves in the table.',
+    'Dados insuficientes para medir uma tendência: é preciso pelo menos um instituto com duas pesquisas marcadas, divulgadas em dias diferentes. Desmarque "Excluir pesquisas com mais de 10 dias" ou marque rodadas anteriores na tabela.')); return; }
   const who=v=>v>=0?'Lula':'Flávio', col=v=>v>=0?'--lula':'--flavio';
   const pd=tr.perDay, pL=Math.round(tr.pL*100);
-  $('tSlope').innerHTML=`<span style="color:var(${col(pd)})">${pd>=0?'+':'−'}${Math.abs(pd).toFixed(2)}</span> <small>pts/day ${who(pd)} · ±${tr.se.toFixed(2)}</small>`;
+  $('tSlope').innerHTML=`<span style="color:var(${col(pd)})">${pd>=0?'+':'−'}${fmtN(Math.abs(pd),2)}</span> <small>${T('pts/day','pts/dia')} ${who(pd)} · ±${fmtN(tr.se,2)}</small>`;
   $('tProj').innerHTML=`<span style="color:var(--lula)">${fmt1(tr.proj)}</span> <small>Lula</small> · <span style="color:var(--flavio)">${fmt1(100-tr.proj)}</span> <small>Flávio</small>`;
   $('tOdds').innerHTML=`<span style="color:var(--lula)">${pL}%</span> <small>Lula</small> · <span style="color:var(--flavio)">${100-pL}%</span> <small>Flávio</small>`;
   const sig=Math.abs(pd)<tr.tq*tr.se;
-  $('tNote').innerHTML=`Measured from ${tr.repeat.length} pollster${tr.repeat.length>1?'s':''} with repeat polls (${tr.repeat.map(esc).join(', ')}). `+
+  const nR=tr.repeat.length, names=tr.repeat.map(esc).join(', ');
+  $('tNote').innerHTML=T(
+    `Measured from ${nR} pollster${nR>1?'s':''} with repeat polls (${names}). `+
     `The model's average reflects polls about ${fmt1(tr.tbar)} days old on average, so the trend is carried forward that many days to 25 Oct. `+
     (sig?`<b>Given how few repeat polls there are, the movement is not clearly different from no change.</b> `:`The movement is clearly different from no change (95% level), though a short trend can still stall. `)+
-    `Odds combine the polling-error slider (±${fmt1(S.sigma)} pts) with the uncertainty in the trend itself. Late trends often stall or reverse; treat this as a what-if, not a forecast.`;
+    `Odds combine the polling-error slider (±${fmt1(S.sigma)} pts) with the uncertainty in the trend itself. Late trends often stall or reverse; treat this as a what-if, not a forecast.`,
+    `Medida a partir de ${nR} instituto${nR>1?'s':''} com pesquisas repetidas (${names}). `+
+    `A média do modelo reflete pesquisas com cerca de ${fmt1(tr.tbar)} dias, em média, então a tendência é projetada por esse número de dias até 25/10. `+
+    (sig?`<b>Com tão poucas pesquisas repetidas, o movimento não se distingue claramente de nenhuma mudança.</b> `:`O movimento é claramente diferente de nenhuma mudança (nível de 95%), embora uma tendência curta ainda possa parar. `)+
+    `As chances combinam o controle de erro das pesquisas (±${fmt1(S.sigma)} pts) com a incerteza da própria tendência. Tendências de última hora costumam parar ou se inverter; trate isto como um "e se", não como uma previsão.`);
 }
 // ---------- model comparison ----------
 // Student-t with 4 degrees of freedom has a closed-form CDF.
@@ -635,41 +670,49 @@ function compareModels(agg){
   const list=agg.list, bias=S.bias, sig=S.sigma, rows=[];
   const normal=(c,sd)=>({c, pL:1-normCdf((50-c)/sd), lo:c-Z80*sd, hi:c+Z80*sd,
     pdf:x=>Math.exp(-(((x-c)/sd)**2)/2)/(sd*Math.sqrt(2*Math.PI))});
-  rows.push({key:'this', name:'This dashboard', ...normal(agg.m+bias,sig),
-    tip:'<b>Weighted average of Lula\'s share + normal polling error.</b> Each poll is weighted by recency and, if ticked, sample size; the average is shifted by the swing slider and given a ±σ polling error set by the slider. Simple and transparent; assumes every pollster is equally accurate and that a miss of more than 2σ is very rare.'});
+  rows.push({key:'this', name:T('This dashboard','Este painel'), ...normal(agg.m+bias,sig),
+    tip:T('<b>Weighted average of Lula\'s share + normal polling error.</b> Each poll is weighted by recency and, if ticked, sample size; the average is shifted by the swing slider and given a ±σ polling error set by the slider. Simple and transparent; assumes every pollster is equally accurate and that a miss of more than 2σ is very rare.',
+      '<b>Média ponderada da fatia de Lula + erro normal das pesquisas.</b> Cada pesquisa é ponderada pela atualidade e, se marcado, pelo tamanho da amostra; a média é deslocada pelo controle de virada e recebe um erro de ±σ definido pelo controle. Simples e transparente; supõe que todos os institutos são igualmente precisos e que um erro maior que 2σ é muito raro.')});
   const avg=list.reduce((a,p)=>a+p.lula,0)/list.length;
-  rows.push({name:'Simple average', ...normal(avg+bias,sig),
-    tip:'<b>Plain mean of the polls, no weights.</b> A 3-week-old poll counts as much as yesterday\'s and a 1,000-person poll as much as a 15,000-person one. Hard to game, but slow to react to late movement.'});
+  rows.push({key:'avg', name:T('Simple average','Média simples'), ...normal(avg+bias,sig),
+    tip:T('<b>Plain mean of the polls, no weights.</b> A 3-week-old poll counts as much as yesterday\'s and a 1,000-person poll as much as a 15,000-person one. Hard to game, but slow to react to late movement.',
+      '<b>Média simples das pesquisas, sem pesos.</b> Uma pesquisa de três semanas vale tanto quanto a de ontem, e uma de 1.000 entrevistas tanto quanto uma de 15.000. Difícil de manipular, mas lenta para reagir a movimentos de última hora.')});
   const srt=list.map(p=>p.lula).sort((a,b)=>a-b), mid=srt.length>>1;
   const med=srt.length%2?srt[mid]:(srt[mid-1]+srt[mid])/2;
-  rows.push({name:'Median poll', ...normal(med+bias,sig),
-    tip:'<b>Middle poll, same polling error.</b> Ignores outliers entirely: one pollster far from the rest can\'t move it. Throws away information about how far the others lean.'});
+  rows.push({key:'median', name:T('Median poll','Pesquisa mediana'), ...normal(med+bias,sig),
+    tip:T('<b>Middle poll, same polling error.</b> Ignores outliers entirely: one pollster far from the rest can\'t move it. Throws away information about how far the others lean.',
+      '<b>Pesquisa do meio, mesmo erro.</b> Ignora totalmente os pontos fora da curva: um instituto muito distante dos demais não a move. Descarta a informação sobre o quanto os outros pendem para um lado.')});
   const ct=agg.m+bias, sc=sig/Math.SQRT2;  // t(4) scaled to the same standard deviation as the slider
-  rows.push({name:'Fat tails (Student-t)', c:ct, pL:1-t4Cdf((50-ct)/sc), lo:ct-T4_80*sc, hi:ct+T4_80*sc,
+  rows.push({key:'t4', name:T('Fat tails (Student-t)','Caudas pesadas (t de Student)'), c:ct, pL:1-t4Cdf((50-ct)/sc), lo:ct-T4_80*sc, hi:ct+T4_80*sc,
     pdf:x=>0.375*(1+((x-ct)/sc)**2/4)**-2.5/sc,
-    tip:'<b>Same average and overall spread, but shaped like real polling errors.</b> A Student-t (4 degrees of freedom) is more peaked in the middle and has longer tails than a normal curve. Small misses become more common and big misses (like Brazil 2022) more likely too, so a modest lead looks a bit safer while a large upset is less far-fetched.'});
+    tip:T('<b>Same average and overall spread, but shaped like real polling errors.</b> A Student-t (4 degrees of freedom) is more peaked in the middle and has longer tails than a normal curve. Small misses become more common and big misses (like Brazil 2022) more likely too, so a modest lead looks a bit safer while a large upset is less far-fetched.',
+      '<b>Mesma média e mesma dispersão, mas com o formato dos erros reais de pesquisa.</b> Uma t de Student (4 graus de liberdade) é mais pontuda no meio e tem caudas mais longas que a curva normal. Erros pequenos ficam mais comuns e erros grandes (como em 2022) também, então uma vantagem modesta parece um pouco mais segura, enquanto uma grande surpresa fica menos improvável.')});
   if(list.length>=2){
     const m=agg.m, sd=Math.sqrt(list.reduce((a,p)=>a+(p.lula-m)**2,0)/(list.length-1));
-    rows.push({name:'Pollster disagreement', ...normal(m+bias,Math.max(sd,0.1)),
-      tip:`<b>Uses how much the pollsters disagree as the error.</b> Standard deviation across the selected polls is ±${fmt1(sd)} pts. If pollsters cluster tightly this looks confident, but they can all be wrong together, which this can\'t see.`});
+    rows.push({key:'disagree', name:T('Pollster disagreement','Divergência entre institutos'), ...normal(m+bias,Math.max(sd,0.1)),
+      tip:T(`<b>Uses how much the pollsters disagree as the error.</b> Standard deviation across the selected polls is ±${fmt1(sd)} pts. If pollsters cluster tightly this looks confident, but they can all be wrong together, which this can't see.`,
+        `<b>Usa a divergência entre os institutos como erro.</b> O desvio-padrão entre as pesquisas selecionadas é de ±${fmt1(sd)} pts. Se os institutos estiverem próximos, o resultado parece confiante, mas todos podem errar juntos, e isso este modelo não enxerga.`)});
   }
   let iv=0, ivm=0;
   list.forEach(p=>{ const v=p.lula*(100-p.lula)/p.n; iv+=1/v; ivm+=p.lula/v; });
-  rows.push({name:'Sampling error only', ...normal(ivm/iv+bias,Math.sqrt(1/iv)),
-    tip:`<b>Pools the polls as if they were one big random sample.</b> Weights each poll by the inverse of its sampling variance, giving a margin of only ±${fmt1(Math.sqrt(1/iv))} pts. Shown as a warning: it ignores that polls share errors (who answers, turnout, wording), so it is badly overconfident.`});
+  rows.push({key:'sampling', name:T('Sampling error only','Só erro amostral'), ...normal(ivm/iv+bias,Math.sqrt(1/iv)),
+    tip:T(`<b>Pools the polls as if they were one big random sample.</b> Weights each poll by the inverse of its sampling variance, giving a margin of only ±${fmt1(Math.sqrt(1/iv))} pts. Shown as a warning: it ignores that polls share errors (who answers, turnout, wording), so it is badly overconfident.`,
+      `<b>Junta as pesquisas como se fossem uma única grande amostra aleatória.</b> Pondera cada pesquisa pelo inverso da variância amostral, o que dá uma margem de apenas ±${fmt1(Math.sqrt(1/iv))} pts. Aparece como alerta: ignora que as pesquisas compartilham erros (quem responde, comparecimento, formulação da pergunta) e por isso é excessivamente confiante.`)});
   const tr=trend(agg);
-  if(tr.ok) rows.push({name:'Trend projection', ...normal(tr.proj,tr.sd), pL:tr.pL,
-    tip:'<b>Carries the recent within-pollster movement forward to 25 Oct.</b> See "Trend to election day" above. Adds the trend\'s own uncertainty to the polling error. Late trends often stall, so this is a what-if.'});
+  if(tr.ok) rows.push({key:'trend', name:T('Trend projection','Projeção da tendência'), ...normal(tr.proj,tr.sd), pL:tr.pL,
+    tip:T('<b>Carries the recent within-pollster movement forward to 25 Oct.</b> See "Trend to election day" above. Adds the trend\'s own uncertainty to the polling error. Late trends often stall, so this is a what-if.',
+      '<b>Projeta até 25/10 o movimento recente dentro de cada instituto.</b> Veja "Tendência até o dia da eleição" acima. Soma a incerteza da própria tendência ao erro das pesquisas. Tendências de última hora costumam parar, então isto é um "e se".')});
   const ahead=list.reduce((a,p)=>a+(p.lula>50?1:p.lula===50?0.5:0),0);
-  rows.push({name:'Count of polls', c:null, pL:ahead/list.length, lo:null, hi:null, pdf:null,
-    tip:'<b>Share of selected polls with Lula ahead (ties count half).</b> Not really a probability: a poll at 50.1 counts the same as one at 55. Included because headlines often read the race this way.'});
+  rows.push({key:'count', name:T('Count of polls','Contagem de pesquisas'), c:null, pL:ahead/list.length, lo:null, hi:null, pdf:null,
+    tip:T('<b>Share of selected polls with Lula ahead (ties count half).</b> Not really a probability: a poll at 50.1 counts the same as one at 55. Included because headlines often read the race this way.',
+      '<b>Parcela das pesquisas selecionadas com Lula à frente (empates contam metade).</b> Não é bem uma probabilidade: uma pesquisa com 50,1 conta igual a uma com 55. Incluída porque as manchetes muitas vezes leem a disputa assim.')});
   return rows;
 }
 // Rows start collapsed; the ones the reader opens stay open across re-renders.
 const CMP_OPEN=new Set();
 function renderCompare(agg){
   const body=$('cmpBody'); body.innerHTML='';
-  if(!agg){ body.innerHTML='<tr><td colspan="6" style="color:var(--muted)">No polls selected.</td></tr>'; return; }
+  if(!agg){ body.innerHTML=`<tr><td colspan="6" style="color:var(--muted)">${T('No polls selected.','Nenhuma pesquisa selecionada.')}</td></tr>`; return; }
   const rows=compareModels(agg);
   const wmax=Math.max(...rows.filter(r=>r.lo!==null).map(r=>r.hi-r.lo));
   // one x-axis for every chart so the curves can be compared by eye
@@ -677,23 +720,24 @@ function renderCompare(agg){
   const dom=[Math.max(40,Math.floor(Math.min(c0-half,...agg.list.map(p=>p.lula-1)))),
              Math.min(60,Math.ceil(Math.max(c0+half,...agg.list.map(p=>p.lula+1))))];
   rows.forEach((r,i)=>{
-    const open=CMP_OPEN.has(r.name), id='cmpx'+i;
+    const open=CMP_OPEN.has(r.key), id='cmpx'+i;
     const tr=document.createElement('tr'); tr.className=(r.key==='this'?'this ':'')+'mrow';
     const pL=Math.round(r.pL*100), w=r.lo===null?null:r.hi-r.lo;
     tr.innerHTML=`
-      <td><button type="button" class="xbtn" aria-expanded="${open}" aria-controls="${id}" aria-label="Show graph for ${esc(r.name)}"><span class="chev" aria-hidden="true">▸</span></button>
+      <td><button type="button" class="xbtn" aria-expanded="${open}" aria-controls="${id}" aria-label="${T('Show graph for','Mostrar gráfico de')} ${esc(r.name)}"><span class="chev" aria-hidden="true">▸</span></button>
         <span class="tip mname" tabindex="0">${esc(r.name)} <span class="info-i" aria-hidden="true">i</span><span class="tipbox" role="tooltip">${r.tip}</span></span></td>
       <td class="num" style="color:var(--lula)">${r.c===null?'—':fmt1(r.c)+'%'}</td>
       <td class="num" style="color:var(--lula)">${pL}%</td>
       <td class="num" style="color:var(--flavio)">${100-pL}%</td>
       <td class="num rng">${r.lo===null?'—':fmt1(r.lo)+'–'+fmt1(r.hi)}</td>
-      <td>${w===null?'<span style="color:var(--faint)">n/a</span>':`<span class="pbarmini" style="width:${Math.max(3,w/wmax*70)}px"></span> <span style="font-family:var(--font-mono);font-size:12px;color:var(--muted)">±${fmt1(w/2)}</span>`}</td>`;
+      <td>${w===null?`<span style="color:var(--faint)">${T('n/a','n/d')}</span>`:`<span class="pbarmini" style="width:${Math.max(3,w/wmax*70)}px"></span> <span style="font-family:var(--font-mono);font-size:12px;color:var(--muted)">±${fmt1(w/2)}</span>`}</td>`;
     const xr=document.createElement('tr'); xr.className='xrow'; xr.id=id; xr.hidden=!open;
-    xr.innerHTML=`<td colspan="6"><canvas aria-label="${esc(r.name)}: ${r.pdf?'probability curve of Lula\'s share':'selected polls'}"></canvas>
-      <p class="xcap">${r.pdf?`Shaded red: Lula wins (${pL}%). Blue: Flávio wins (${100-pL}%). Ticks along the bottom are the selected polls.`:'Each dot is a selected poll. The odds are just the share of dots right of 50%.'}</p></td>`;
+    xr.innerHTML=`<td colspan="6"><canvas aria-label="${esc(r.name)}: ${r.pdf?T('probability curve of Lula\'s share','curva de probabilidade da fatia de Lula'):T('selected polls','pesquisas selecionadas')}"></canvas>
+      <p class="xcap">${r.pdf?T(`Shaded red: Lula wins (${pL}%). Blue: Flávio wins (${100-pL}%). Ticks along the bottom are the selected polls.`,`Em vermelho: Lula vence (${pL}%). Em azul: Flávio vence (${100-pL}%). Os traços na base são as pesquisas selecionadas.`)
+        :T('Each dot is a selected poll. The odds are just the share of dots right of 50%.','Cada ponto é uma pesquisa selecionada. As chances são só a parcela de pontos à direita de 50%.')}</p></td>`;
     const btn=tr.querySelector('.xbtn');
     btn.addEventListener('click',()=>{
-      const now=!CMP_OPEN.has(r.name); now?CMP_OPEN.add(r.name):CMP_OPEN.delete(r.name);
+      const now=!CMP_OPEN.has(r.key); now?CMP_OPEN.add(r.key):CMP_OPEN.delete(r.key);
       btn.setAttribute('aria-expanded',now); xr.hidden=!now;
       if(now) drawModel(xr.querySelector('canvas'),r,dom,agg.list);
     });
@@ -755,9 +799,9 @@ function render(){
       <td><label style="display:flex;align-items:center;gap:8px;cursor:pointer">
         <input type="checkbox" ${p.on?'checked':''} data-poll="${p.id}">
         <span class="pollname">${p.name}</span></label></td>
-      <td class="num">${p.field}</td>
+      <td class="num">${fmtField(p.field)}</td>
       <td class="num">${p.released}</td>
-      <td class="num">${p.n.toLocaleString()}</td>
+      <td class="num">${p.n.toLocaleString(LOC())}</td>
       <td class="num" style="color:var(--lula)">${fmt1(p.lula)}</td>
       <td class="num" style="color:var(--flavio)">${fmt1(p.flavio)}</td>
       <td class="num"><span class="tcell">${active?Math.round(wmap[p.id]/agg.W*100)+'%':(w=>`<span class="why" title="${w.tip}">${w.txt}</span>`)(whyOff(p))}<span class="wbar" style="width:${wpct*0.5}px"></span></span></td>
@@ -775,7 +819,7 @@ function render(){
     $('probL').textContent='—';$('probF').textContent='—';
     $('segL').style.width='0'; $('segF').style.width='0';
     ['sCentral','sRange','sMargin'].forEach(id=>$(id).textContent='—');
-    $('fav').textContent='No polls selected. Tick at least one poll in the table below.';
+    $('fav').textContent=T('No polls selected. Tick at least one poll in the table below.','Nenhuma pesquisa selecionada. Marque pelo menos uma pesquisa na tabela abaixo.');
     ctx.clearRect(0,0,canvas.width,canvas.height); renderTrend(null); renderCompare(null); return;
   }
   renderTrend(agg); renderCompare(agg);
@@ -786,21 +830,23 @@ function render(){
 
   // Verdict is written from Lula's side; it never names a favorite at an exact tie.
   let verdict;
-  if(pL===pF) verdict=`A coin-flip. <b>Lula</b> wins exactly half of the simulations; neither candidate is favored.`;
-  else if(Math.abs(pL-50)<=6) verdict=`A coin-flip. <b>Lula</b> wins ${pL}% of the simulations — a marginal ${pL>50?'favorite':'underdog'}, well inside the uncertainty.`;
-  else if(pL>=65&&pL<80) verdict=`<b>Lula</b> is favored at ${pL}% under these assumptions.`;
-  else if(pL>=80) verdict=`<b>Lula</b> is a strong favorite (${pL}%) under these assumptions.`;
-  else if(pL>50) verdict=`<b>Lula</b> is a slight favorite (${pL}%), but the outcome is far from settled.`;
-  else if(pL>35) verdict=`<b>Lula</b> is a slight underdog: he wins ${pL}% of the simulations, Flávio ${pF}%.`;
-  else if(pL>20) verdict=`<b>Lula</b> trails: he wins ${pL}% of the simulations under these assumptions, Flávio ${pF}%.`;
-  else verdict=`<b>Lula</b> is a long shot at ${pL}% under these assumptions; Flávio wins ${pF}%.`;
-  $('fav').innerHTML=verdict+` <span class="chip">average: Lula ${fmt1(res.center)}% · Flávio ${fmt1(100-res.center)}%</span>`;
+  if(pL===pF) verdict=T(`A coin-flip. <b>Lula</b> wins exactly half of the simulations; neither candidate is favored.`,
+    `Cara ou coroa. <b>Lula</b> vence exatamente metade das simulações; nenhum candidato é favorito.`);
+  else if(Math.abs(pL-50)<=6) verdict=T(`A coin-flip. <b>Lula</b> wins ${pL}% of the simulations — a marginal ${pL>50?'favorite':'underdog'}, well inside the uncertainty.`,
+    `Cara ou coroa. <b>Lula</b> vence ${pL}% das simulações — ${pL>50?'ligeiro favorito':'ligeiramente atrás'}, bem dentro da incerteza.`);
+  else if(pL>=65&&pL<80) verdict=T(`<b>Lula</b> is favored at ${pL}% under these assumptions.`,`<b>Lula</b> é favorito, com ${pL}%, sob estas hipóteses.`);
+  else if(pL>=80) verdict=T(`<b>Lula</b> is a strong favorite (${pL}%) under these assumptions.`,`<b>Lula</b> é amplo favorito (${pL}%) sob estas hipóteses.`);
+  else if(pL>50) verdict=T(`<b>Lula</b> is a slight favorite (${pL}%), but the outcome is far from settled.`,`<b>Lula</b> é ligeiro favorito (${pL}%), mas o resultado está longe de definido.`);
+  else if(pL>35) verdict=T(`<b>Lula</b> is a slight underdog: he wins ${pL}% of the simulations, Flávio ${pF}%.`,`<b>Lula</b> está ligeiramente atrás: vence ${pL}% das simulações, e Flávio, ${pF}%.`);
+  else if(pL>20) verdict=T(`<b>Lula</b> trails: he wins ${pL}% of the simulations under these assumptions, Flávio ${pF}%.`,`<b>Lula</b> está atrás: vence ${pL}% das simulações sob estas hipóteses, e Flávio, ${pF}%.`);
+  else verdict=T(`<b>Lula</b> is a long shot at ${pL}% under these assumptions; Flávio wins ${pF}%.`,`<b>Lula</b> é azarão, com ${pL}% sob estas hipóteses; Flávio vence ${pF}%.`);
+  $('fav').innerHTML=verdict+` <span class="chip">${T('average','média')}: Lula ${fmt1(res.center)}% · Flávio ${fmt1(100-res.center)}%</span>`;
 
   $('sCentral').innerHTML=`<span style="color:var(--lula)">${fmt1(res.center)}</span> <small>Lula</small> · <span style="color:var(--flavio)">${fmt1(100-res.center)}</span> <small>Flávio</small>`;
   $('sRange').innerHTML=`${fmt1(res.p10)}–${fmt1(res.p90)}<small> %</small>`;
   const mg=res.center-50; const mgWho=mg>=0?'Lula':'Flávio';
   const mgcol=mg>=0?'--lula':'--flavio';
-  $('sMargin').innerHTML=`<span style="color:var(${mgcol})">${mg>=0?'+':''}${fmt1(mg*2)}</span> <small>${mgWho}</small>`;
+  $('sMargin').innerHTML=`<span style="color:var(${mgcol})">+${fmt1(Math.abs(mg*2))}</span> <small>${mgWho}</small>`;
 
   draw(res);
 }
@@ -808,7 +854,7 @@ function render(){
 // ---------- poll search + bulk select ----------
 const fold=s=>String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 const query=()=>fold($('pollSearch').value.trim());
-const matches=(p,q)=>!q || fold([p.name,p.field,p.released,p.reg,p.src].join(' ')).includes(q);
+const matches=(p,q)=>!q || fold([p.name,p.field,fmtField(p.field),p.released,p.reg,p.src].join(' ')).includes(q);
 function applyFilter(){
   const q=query(); let shown=0;
   $('pollBody').querySelectorAll('tr[data-id]').forEach(tr=>{
@@ -817,13 +863,14 @@ function applyFilter(){
   const old=$('pollBody').querySelector('.noresult-row'); if(old) old.remove();
   if(q && !shown){
     const tr=document.createElement('tr'); tr.className='noresult-row';
-    tr.innerHTML='<td colspan="9" class="noresult" style="text-align:left">No polls match this search.</td>';
+    tr.innerHTML=`<td colspan="9" class="noresult" style="text-align:left">${T('No polls match this search.','Nenhuma pesquisa corresponde à busca.')}</td>`;
     $('pollBody').appendChild(tr);
   }
   const on=POLLS.filter(p=>p.on).length;
-  $('pollCount').textContent=`${on} of ${POLLS.length} polls selected`+(q?` · ${shown} shown`:'');
-  $('selAll').textContent=q?'Select shown':'Select all';
-  $('selNone').textContent=q?'Unselect shown':'Unselect all';
+  $('pollCount').textContent=T(`${on} of ${POLLS.length} polls selected`+(q?` · ${shown} shown`:''),
+    `${on} de ${POLLS.length} pesquisas selecionadas`+(q?` · ${shown} exibidas`:''));
+  $('selAll').textContent=q?T('Select shown','Marcar exibidas'):T('Select all','Marcar todas');
+  $('selNone').textContent=q?T('Unselect shown','Desmarcar exibidas'):T('Unselect all','Desmarcar todas');
   $('selAll').disabled=$('selNone').disabled=(q && !shown);
 }
 function renderInstitutes(){
@@ -832,7 +879,7 @@ function renderInstitutes(){
   names.forEach(name=>{
     const ps=POLLS.filter(p=>p.name===name), on=ps.filter(p=>p.on).length;
     const lab=document.createElement('label'); lab.className='inst'+(on?'':' none');
-    lab.title=`${on} of ${ps.length} ${name} poll${ps.length>1?'s':''} selected`;
+    lab.title=T(`${on} of ${ps.length} ${name} poll${ps.length>1?'s':''} selected`,`${on} de ${ps.length} pesquisa${ps.length>1?'s':''} ${name} selecionada${ps.length>1?'s':''}`);
     const cb=document.createElement('input'); cb.type='checkbox';
     cb.checked=on===ps.length; cb.indeterminate=on>0&&on<ps.length;
     cb.addEventListener('change',()=>{ const v=on<ps.length; ps.forEach(p=>p.on=v); render(); });
@@ -853,7 +900,7 @@ function syncInputs(){
   $('latestOnly').checked=S.latestOnly; $('exclOld').checked=S.exclOld;
   $('sigmaV').textContent='±'+fmt1(S.sigma)+' pts';
   $('biasV').textContent=(S.bias>0?'+':'')+fmt1(S.bias)+' pts'+(S.bias>0?' →Lula':S.bias<0?' →Flávio':'');
-  $('hlV').textContent=fmt1(S.hl)+' days';
+  $('hlV').textContent=fmt1(S.hl)+T(' days',' dias');
 }
 function bindRange(id,key){
   $(id).addEventListener('input',e=>{S[key]=parseFloat(e.target.value);syncInputs();render();});
@@ -891,15 +938,124 @@ async function boot(){
   try{
     const r = await fetch('polls.json',{cache:'no-store'});
     if(!r.ok) throw new Error(r.status);
-    POLLS = (await r.json()).map(p=>({...p, released:fmtDate(p.released), lula:+(100-p.flavio).toFixed(1), on:true}));
+    POLLS = (await r.json()).map(p=>({...p, rel:p.released, released:fmtDate(p.released), lula:+(100-p.flavio).toFixed(1), on:true}));
   }catch(e){
-    document.getElementById('fav').textContent='Could not load polls.json. Run scripts/build_dashboard_data.py and serve the public/ folder over HTTP.';
+    document.getElementById('fav').textContent=T('Could not load polls.json. Run scripts/build_dashboard_data.py and serve the public/ folder over HTTP.',
+      'Não foi possível carregar polls.json. Rode scripts/build_dashboard_data.py e sirva a pasta public/ por HTTP.');
     return;
   }
-  const last = POLLS.reduce((a,p)=>p.days<a.days?p:a, POLLS[0]);
-  document.getElementById('asof').textContent = `${POLLS.length} polls · latest released ${last.released}`;
-  resetBase(); render();
+  setAsof(); resetBase(); render();
 }
+function setAsof(){
+  if(!POLLS.length) return;
+  const last = POLLS.reduce((a,p)=>p.days<a.days?p:a, POLLS[0]);
+  $('asof').textContent = T(`${POLLS.length} polls · latest released ${last.released}`,`${POLLS.length} pesquisas · última divulgada em ${last.released}`);
+}
+
+const I18N_PT={
+  eyebrow:`2º turno presidencial 2026 · Monte Carlo`,
+  h1:`Lula pode vencer? — as chances de amanhã`,
+  sub:`Um modelo probabilístico da chance de Lula no segundo turno de 25 de outubro contra Flávio Bolsonaro. Ele agrega as pesquisas públicas de votos válidos e simula 40.000 eleições. Mova os controles para testar outras hipóteses sobre o erro das pesquisas e uma virada de última hora.`,
+  disc:`<b>Isto é um modelo, não uma previsão.</b> A disputa está em empate estatístico; as pesquisas podem errar todas juntas, como mostrou o segundo turno de 2022. O resultado é uma faixa de desfechos plausíveis sob hipóteses que você controla — não um prognóstico de quem vai ganhar.`,
+  hOdds:`Probabilidade de vitória`,
+  hDist:`Distribuição da fatia de votos válidos de Lula`,
+  nDist:`Cada eleição simulada é um sorteio. Tudo à direita da linha de 50% é vitória de Lula; tudo à esquerda, vitória de Flávio.`,
+  aDist:`Distribuição simulada da fatia de votos de Lula`,
+  lgLwin:`<span class="dot" style="background:var(--lula)"></span>Lula vence (&gt;50%)`,
+  lgFwin:`<span class="dot" style="background:var(--flavio)"></span>Flávio vence (&lt;50%)`,
+  lgMed:`<span class="dot" style="background:var(--muted);width:3px;height:13px;border-radius:1px"></span>resultado mediano`,
+  kCentral:`Estimativa central`,
+  kRange:`Faixa de 80% · Lula`,
+  kMargin:`Margem esperada`,
+  hTrend:`Tendência até o dia da eleição`,
+  nTrend:`O que acontece se o movimento recente nas pesquisas marcadas continuar até a votação. Cada instituto é comparado apenas consigo mesmo, então um instituto que sempre dá números altos para um candidato não cria uma tendência falsa. Usa todas as pesquisas marcadas, inclusive rodadas anteriores do mesmo instituto. As linhas ligam pesquisas do mesmo instituto.`,
+  aTrend:`Fatia de votos válidos de Lula nas pesquisas marcadas, por data de divulgação, com a linha de tendência projetada até 25 de outubro`,
+  lgLahead:`<span class="dot" style="background:var(--lula)"></span>pesquisa com Lula à frente`,
+  lgFahead:`<span class="dot" style="background:var(--flavio)"></span>Flávio à frente`,
+  lgTrend:`<span class="dot" style="background:var(--fg);width:14px;height:3px;border-radius:1px"></span>tendência, tracejada depois da última pesquisa`,
+  kSlope:`Movimento por dia`,
+  kProj:`Projeção para 25/10 · Lula`,
+  kOdds:`Chances se a tendência se mantiver`,
+  hCmp:`Outras formas de ler as mesmas pesquisas`,
+  nCmp:`As mesmas pesquisas e configurações, aplicadas a diferentes modelos de probabilidade. Passe o mouse ou toque em <span class="info-i" aria-hidden="true">i</span> para ver como cada um funciona e onde erra; abra ▸ para ver a curva. <b>Precisão</b> é a largura da faixa de 80%: mais estreita significa mais certeza, não mais acerto. Nenhum modelo pode ser avaliado antes do resultado.`,
+  thCmp:`<tr><th>Modelo</th><th class="num">Fatia de Lula</th><th class="num">Lula vence</th><th class="num">Flávio vence</th><th class="num rng">Faixa de 80%</th><th>Precisão</th></tr>`,
+  hCtl:`Hipóteses do modelo`,
+  nCtl:`Os cenários ajustam os controles; altere a partir daí.`,
+  prBase:`Cenário base`,
+  prTight:`Pesquisas certeiras`,
+  prMiss:`Erro como em 2022 (pesquisas superestimam Lula)`,
+  prSwing:`Virada tardia de Lula`,
+  prNoise:`Alta incerteza`,
+  lSigma:`Erro das pesquisas (o quanto elas podem errar juntas)`,
+  hSigma:`Desvio-padrão da fatia final de Lula, em pontos (a margem varia o dobro). É a principal fonte de incerteza — o erro amostral fica minúsculo quando as pesquisas são agregadas. Cerca de 2 pts (±4 com 95% de confiança) corresponde à precisão recente em segundos turnos no Brasil.`,
+  lBias:`Virada tardia / ajuste de viés dos institutos`,
+  hBias:`Desloca toda a distribuição. Positivo = a favor de Lula; negativo = a favor de Flávio (ex.: pesquisas subestimando a direita, como em 2022). Zero = usar a média das pesquisas como está.`,
+  lHl:`Meia-vida do peso por atualidade`,
+  hHl:`Com que rapidez as pesquisas antigas perdem peso. Com meia-vida de 5 dias, uma pesquisa de 5 dias atrás vale metade de uma de hoje.`,
+  tExcl:`Excluir pesquisas com mais de 10 dias`,
+  tLatest:`Só a pesquisa mais recente de cada instituto`,
+  tSample:`Ponderar pelo tamanho da amostra`,
+  reset:`Voltar ao cenário base`,
+  hPolls:`Pesquisas no modelo`,
+  nPolls:`Fatia de votos válidos entre os dois candidatos (brancos, nulos e indecisos excluídos). Só Datafolha, Quaest e Vox Brasil vêm marcados quando a página abre; marque qualquer outra pesquisa, ou um instituto inteiro, para incluí-la. As barras mostram o peso atual de cada pesquisa; linhas esmaecidas estão fora do modelo, e a coluna de peso diz por quê (ex.: "substituída": uma rodada anterior de um instituto que tem pesquisa mais nova — desmarque "Só a pesquisa mais recente de cada instituto" para contá-la). Os links de fonte levam à reportagem de onde veio cada número; consulte o número de registro no <a href="https://pesqele-divulgacao.tse.jus.br/app/pesquisa/listar.xhtml" target="_blank" rel="noopener">PesqEle</a> do TSE ("Número de identificação") — ele guarda a metodologia, não os resultados.`,
+  phSearch:`Buscar instituto, data, registro, fonte…`,
+  aSearch:`Buscar pesquisas`,
+  lgInst:`Institutos`,
+  thPolls:`<tr><th>Instituto</th><th>Campo</th><th>Divulgação</th><th>Amostra</th><th>Lula</th><th>Flávio</th><th>Peso</th><th>Reg. TSE</th><th>Fonte</th></tr>`,
+  sumMethod:`Como o modelo funciona`,
+  method:`
+      <p>O modelo trata o segundo turno como uma disputa entre dois candidatos em <b>votos válidos</b> e pergunta: dadas as pesquisas, que faixa de resultados é plausível quando admitimos que as pesquisas podem errar juntas?</p>
+      <h3>1 · Agregar</h3>
+      <p>A fatia de votos válidos de Lula em cada pesquisa entra numa média ponderada. Peso = decaimento por atualidade × (opcional) √tamanho da amostra, limitado a 5.000; todos os institutos são tratados como igualmente precisos. Por padrão, só a pesquisa mais recente de cada instituto conta, para que quem publica a cada poucos dias não ganhe peso extra, e pesquisas divulgadas mais de 10 dias antes da votação ficam de fora. Quando a pesquisa divulgou só votos totais, a fatia válida é calculada como Lula ÷ (Lula + Flávio).</p>
+      <h3>2 · Modelar a incerteza</h3>
+      <p>O número principal não é o mais importante — a dispersão é. Cada uma das 40.000 eleições simuladas sorteia um resultado de uma distribuição normal centrada na média ponderada (mais qualquer ajuste de virada), com desvio-padrão definido pelo controle de <code>erro das pesquisas</code>. Esse termo de "todas as pesquisas erram juntas" domina porque o erro amostral agregado é desprezível.</p>
+      <h3>3 · Contar</h3>
+      <p>A probabilidade de vitória de Lula é simplesmente a parcela das 40.000 simulações em que a fatia dele passa de 50%. O gráfico de distribuição é o histograma desses sorteios.</p>
+      <h3>Limites honestos</h3>
+      <ul>
+        <li>Se as pesquisas tiverem um viés sistemático em comum, o modelo também terá.</li>
+        <li>Não há modelagem por estado ou geografia eleitoral — o segundo turno é decidido pelo voto popular nacional, então um único número decide.</li>
+        <li>Palver, Instituto França e Brazil Economy/Colectta divulgaram pesquisas na véspera, mas os números não foram encontrados em nenhuma fonte, por isso estão fora do modelo.</li>
+        <li>Institutos que divulgam só votos totais ou usam outra formulação de pergunta não são ajustados por viés da casa.</li>
+        <li>A distribuição normal é uma aproximação; erros reais de pesquisa podem ter caudas pesadas.</li>
+      </ul>
+    `,
+  footer:`
+    Dados das pesquisas: <code>data/polls.csv</code> no repositório, com o link da fonte em cada linha.<br>Os números são estimativas do modelo, não resultados oficiais.
+  `,
+};
+// Static text: English is read from the page itself the first time; Portuguese comes from I18N_PT.
+const EN_TEXT=new Map();
+function applyStatic(){
+  document.documentElement.lang=T('en','pt-BR');
+  document.title=T('Lula–Flávio Runoff Model','Modelo do 2º turno Lula–Flávio');
+  document.querySelector('meta[name=description]').content=T('Monte Carlo model of the 2026 Brazilian presidential runoff, built on published valid-vote polls.',
+    'Modelo de Monte Carlo do segundo turno presidencial de 2026, baseado nas pesquisas de votos válidos divulgadas.');
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    if(!EN_TEXT.has(el)) EN_TEXT.set(el,el.innerHTML);
+    el.innerHTML=LANG==='pt'?I18N_PT[el.dataset.i18n]:EN_TEXT.get(el);
+  });
+  document.querySelectorAll('[data-i18n-attr]').forEach(el=>{
+    el.dataset.i18nAttr.split(';').forEach(pair=>{
+      const [attr,key]=pair.split(':');
+      if(!EN_TEXT.has(el)) EN_TEXT.set(el,{});
+      const en=EN_TEXT.get(el); if(!(attr in en)) en[attr]=el.getAttribute(attr);
+      el.setAttribute(attr,LANG==='pt'?I18N_PT[key]:en[attr]);
+    });
+  });
+  document.querySelectorAll('.lang button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===LANG));
+}
+function setLang(l){
+  if(!LANGS.includes(l)||l===LANG) return;
+  LANG=l;
+  try{ localStorage.setItem('lang',l); }catch(e){}
+  try{ const u=new URL(location.href); u.searchParams.set('lang',l); history.replaceState(null,'',u); }catch(e){}
+  applyStatic();
+  POLLS.forEach(p=>p.released=fmtDate(p.rel));
+  setAsof(); syncInputs(); if(POLLS.length) render();
+}
+document.querySelectorAll('.lang button').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
+applyStatic();
 boot();
 </script>
 </body>
