@@ -5,13 +5,13 @@
     "field": "Oct 5-7",
     "released": "2026-10-07",
     "days": 18,
-    "n": 2000,
+    "n": 3000,
     "flavio": 53.0,
     "groupA": false,
     "reg": "",
     "src": "https://urnaaberta.com.br/",
-    "nKnown": false,
-    "note": "From the urnaaberta.com.br aggregator (retrieved 2026-10-25); release date taken as fieldwork end; sample size and TSE registration not given"
+    "nKnown": true,
+    "note": "From the urnaaberta.com.br aggregator (retrieved 2026-10-25); release date taken as fieldwork end; TSE registration not given; sample size 3,000 from https://eleicoes2026.opiniao.inf.br/publicacoes/pesquisas-segundo-turno/"
   },
   {
     "id": "df1",
@@ -33,13 +33,13 @@
     "field": "Oct 6-8",
     "released": "2026-10-08",
     "days": 17,
-    "n": 2000,
+    "n": 1500,
     "flavio": 52.7,
     "groupA": false,
     "reg": "",
     "src": "https://urnaaberta.com.br/",
-    "nKnown": false,
-    "note": "From the urnaaberta.com.br aggregator (retrieved 2026-10-25); release date taken as fieldwork end; sample size and TSE registration not given"
+    "nKnown": true,
+    "note": "From the urnaaberta.com.br aggregator (retrieved 2026-10-25); release date taken as fieldwork end; TSE registration not given; sample size 1,500 from https://eleicoes2026.opiniao.inf.br/publicacoes/pesquisas-segundo-turno/"
   },
   {
     "id": "at1",
@@ -66,8 +66,8 @@
     "groupA": false,
     "reg": "",
     "src": "https://urnaaberta.com.br/",
-    "nKnown": false,
-    "note": "From the urnaaberta.com.br aggregator (retrieved 2026-10-25); release date taken as fieldwork end; sample size and TSE registration not given"
+    "nKnown": true,
+    "note": "From the urnaaberta.com.br aggregator (retrieved 2026-10-25); release date taken as fieldwork end; TSE registration not given; sample size 2,000 from https://eleicoes2026.opiniao.inf.br/publicacoes/pesquisas-segundo-turno/"
   },
   {
     "id": "vx0a",
@@ -94,8 +94,8 @@
     "groupA": false,
     "reg": "",
     "src": "https://urnaaberta.com.br/",
-    "nKnown": false,
-    "note": "From the urnaaberta.com.br aggregator (retrieved 2026-10-25); release date taken as fieldwork end; sample size and TSE registration not given"
+    "nKnown": true,
+    "note": "From the urnaaberta.com.br aggregator (retrieved 2026-10-25); release date taken as fieldwork end; TSE registration not given; sample size 2,000 from https://eleicoes2026.opiniao.inf.br/publicacoes/pesquisas-segundo-turno/"
   },
   {
     "id": "geru3",
@@ -103,13 +103,13 @@
     "field": "Oct 8-12",
     "released": "2026-10-12",
     "days": 13,
-    "n": 2000,
+    "n": 2400,
     "flavio": 55.0,
     "groupA": false,
     "reg": "",
     "src": "https://urnaaberta.com.br/",
-    "nKnown": false,
-    "note": "From the urnaaberta.com.br aggregator (retrieved 2026-10-25); release date taken as fieldwork end; sample size and TSE registration not given"
+    "nKnown": true,
+    "note": "From the urnaaberta.com.br aggregator (retrieved 2026-10-25); release date taken as fieldwork end; TSE registration not given; sample size 2,400 from https://eleicoes2026.opiniao.inf.br/publicacoes/pesquisas-segundo-turno/"
   },
   {
     "id": "nx1",
@@ -220,8 +220,8 @@
     "groupA": false,
     "reg": "",
     "src": "https://urnaaberta.com.br/",
-    "nKnown": false,
-    "note": "From the urnaaberta.com.br aggregator (retrieved 2026-10-25); release date taken as fieldwork end; sample size and TSE registration not given"
+    "nKnown": true,
+    "note": "From the urnaaberta.com.br aggregator (retrieved 2026-10-25); release date taken as fieldwork end; TSE registration not given; sample size 2,000 from https://eleicoes2026.opiniao.inf.br/publicacoes/pesquisas-segundo-turno/"
   },
   {
     "id": "podu2",
@@ -229,13 +229,13 @@
     "field": "Oct 13-15",
     "released": "2026-10-15",
     "days": 10,
-    "n": 2000,
+    "n": 3000,
     "flavio": 50.0,
     "groupA": false,
     "reg": "",
     "src": "https://urnaaberta.com.br/",
-    "nKnown": false,
-    "note": "From the urnaaberta.com.br aggregator (retrieved 2026-10-25); release date taken as fieldwork end; sample size and TSE registration not given"
+    "nKnown": true,
+    "note": "From the urnaaberta.com.br aggregator (retrieved 2026-10-25); release date taken as fieldwork end; TSE registration not given; sample size 3,000 from https://eleicoes2026.opiniao.inf.br/publicacoes/pesquisas-segundo-turno/"
   },
   {
     "id": "datu3",
@@ -257,13 +257,13 @@
     "field": "Oct 14-16",
     "released": "2026-10-16",
     "days": 9,
-    "n": 2000,
+    "n": 2400,
     "flavio": 52.0,
     "groupA": false,
     "reg": "",
     "src": "https://urnaaberta.com.br/",
-    "nKnown": false,
-    "note": "From the urnaaberta.com.br aggregator (retrieved 2026-10-25); release date taken as fieldwork end; sample size and TSE registration not given"
+    "nKnown": true,
+    "note": "From the urnaaberta.com.br aggregator (retrieved 2026-10-25); release date taken as fieldwork end; TSE registration not given; sample size 2,400 from https://eleicoes2026.opiniao.inf.br/publicacoes/pesquisas-segundo-turno/"
   },
   {
     "id": "veru2",
@@ -271,13 +271,13 @@
     "field": "Oct 12-16",
     "released": "2026-10-16",
     "days": 9,
-    "n": 2000,
+    "n": 15554,
     "flavio": 51.1,
     "groupA": false,
     "reg": "",
     "src": "https://urnaaberta.com.br/",
-    "nKnown": false,
-    "note": "From the urnaaberta.com.br aggregator (retrieved 2026-10-25); release date taken as fieldwork end; sample size and TSE registration not given"
+    "nKnown": true,
+    "note": "From the urnaaberta.com.br aggregator (retrieved 2026-10-25); release date taken as fieldwork end; TSE registration not given; sample size 15,554 from https://eleicoes2026.opiniao.inf.br/publicacoes/pesquisas-segundo-turno/"
   },
   {
     "id": "datu2",
@@ -290,8 +290,8 @@
     "groupA": false,
     "reg": "",
     "src": "https://urnaaberta.com.br/",
-    "nKnown": false,
-    "note": "From the urnaaberta.com.br aggregator (retrieved 2026-10-25); release date taken as fieldwork end; sample size and TSE registration not given"
+    "nKnown": true,
+    "note": "From the urnaaberta.com.br aggregator (retrieved 2026-10-25); release date taken as fieldwork end; TSE registration not given; sample size 2,000 from https://eleicoes2026.opiniao.inf.br/publicacoes/pesquisas-segundo-turno/"
   },
   {
     "id": "futu2",
@@ -304,8 +304,8 @@
     "groupA": false,
     "reg": "",
     "src": "https://urnaaberta.com.br/",
-    "nKnown": false,
-    "note": "From the urnaaberta.com.br aggregator (retrieved 2026-10-25); release date taken as fieldwork end; sample size and TSE registration not given"
+    "nKnown": true,
+    "note": "From the urnaaberta.com.br aggregator (retrieved 2026-10-25); release date taken as fieldwork end; TSE registration not given; sample size 2,000 from https://eleicoes2026.opiniao.inf.br/publicacoes/pesquisas-segundo-turno/"
   },
   {
     "id": "ip1",
@@ -327,13 +327,13 @@
     "field": "Oct 16-18",
     "released": "2026-10-18",
     "days": 7,
-    "n": 2000,
+    "n": 3000,
     "flavio": 52.0,
     "groupA": false,
     "reg": "",
     "src": "https://urnaaberta.com.br/",
-    "nKnown": false,
-    "note": "From the urnaaberta.com.br aggregator (retrieved 2026-10-25); release date taken as fieldwork end; sample size and TSE registration not given"
+    "nKnown": true,
+    "note": "From the urnaaberta.com.br aggregator (retrieved 2026-10-25); release date taken as fieldwork end; TSE registration not given; sample size 3,000 from https://eleicoes2026.opiniao.inf.br/publicacoes/pesquisas-segundo-turno/"
   },
   {
     "id": "vx0b",
@@ -467,13 +467,13 @@
     "field": "Oct 18-20",
     "released": "2026-10-20",
     "days": 5,
-    "n": 2000,
+    "n": 5000,
     "flavio": 51.0,
     "groupA": false,
     "reg": "",
     "src": "https://urnaaberta.com.br/",
-    "nKnown": false,
-    "note": "From the urnaaberta.com.br aggregator (retrieved 2026-10-25); release date taken as fieldwork end; sample size and TSE registration not given; valid share calculated by the aggregator from total votes"
+    "nKnown": true,
+    "note": "From the urnaaberta.com.br aggregator (retrieved 2026-10-25); release date taken as fieldwork end; TSE registration not given; valid share calculated by the aggregator from total votes; sample size 5,000 from https://eleicoes2026.opiniao.inf.br/publicacoes/pesquisas-segundo-turno/"
   },
   {
     "id": "rt1",
