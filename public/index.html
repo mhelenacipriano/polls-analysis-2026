@@ -148,6 +148,10 @@ body{margin:0;font-size:14px}
   .controls h2{font-size:15px;margin-bottom:3px}
   .controls .lead{font-size:13px;color:var(--muted);margin-bottom:16px}
   .ctl{margin-top:16px}
+  .controls .subh{font-size:13.5px;margin-top:22px;padding-top:14px;border-top:1px solid var(--line)}
+  .controls .subh + .hint{font-size:12px;color:var(--faint);margin-top:2px;max-width:60ch}
+  .adjnote{font-size:12.5px;color:var(--muted);margin-top:12px}
+  .adjnote b{color:var(--fg);font-weight:600}
   .ctl .row{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
   .ctl label{font-size:13.5px;font-weight:600}
   .ctl .val{font-family:var(--font-mono);font-size:13px;color:var(--flavio)}
@@ -321,6 +325,40 @@ body{margin:0;font-size:14px}
       <p class="hint" data-i18n="hHl">How fast older polls lose weight. A 5-day half-life means a poll from 5 days ago counts half as much as today's.</p>
     </div>
 
+    <h3 class="subh" data-i18n="hTurn">Turnout and late deciders</h3>
+    <p class="hint" data-i18n="nTurn">What the polls can't see: who actually shows up, and where blank, null and undecided voters end up. These shift every model on the page; at their defaults they change nothing.</p>
+
+    <div class="ctl">
+      <div class="row"><label for="pool" data-i18n="lPool">Blank, null and undecided voters</label><span class="val" id="poolV"></span></div>
+      <input type="range" id="pool" min="0" max="20" step="0.5">
+      <p class="hint" data-i18n="hPool">Share of respondents who picked neither candidate. 8% is the average of the latest Datafolha (5%), Quaest (9%) and Vox Brasil (10.3%).</p>
+    </div>
+
+    <div class="ctl">
+      <div class="row"><label for="conv" data-i18n="lConv">Of those, how many end up voting for a candidate</label><span class="val" id="convV"></span></div>
+      <input type="range" id="conv" min="0" max="100" step="5">
+      <p class="hint" data-i18n="hConv">0% = they all stay blank, null or at home, which is what the valid-vote numbers assume.</p>
+    </div>
+
+    <div class="ctl">
+      <div class="row"><label for="convL" data-i18n="lConvL">Lula's share of those late deciders</label><span class="val" id="convLV"></span></div>
+      <input type="range" id="convL" min="0" max="100" step="5">
+      <p class="hint" data-i18n="hConvL">50% = they split evenly and the race doesn't move. Above 50% they break for Lula; below, for Flávio.</p>
+    </div>
+
+    <div class="ctl">
+      <div class="row"><label for="turn" data-i18n="lTurn">Extra turnout beyond what the polls assume</label><span class="val" id="turnV"></span></div>
+      <input type="range" id="turn" min="0" max="20" step="0.5">
+      <p class="hint" data-i18n="hTurn2">Extra valid votes as a percentage of the votes the polls already count. 5% means 5 extra voters for every 100 the polls expect.</p>
+    </div>
+
+    <div class="ctl">
+      <div class="row"><label for="turnL" data-i18n="lTurnL">Lula's share among the extra voters</label><span class="val" id="turnLV"></span></div>
+      <input type="range" id="turnL" min="0" max="100" step="5">
+      <p class="hint" data-i18n="hTurnL">50% = the new voters split like a coin and change nothing. Set it above 50% if a high turnout mostly brings out Lula's voters.</p>
+    </div>
+    <p class="adjnote" id="adjNote" aria-live="polite"></p>
+
     <div class="ctl">
       <div class="toggles">
         <label class="tog"><input type="checkbox" id="exclOld"><span data-i18n="tExcl">Exclude polls older than 10 days</span></label>
@@ -357,6 +395,8 @@ body{margin:0;font-size:14px}
       <p>Each poll's Lula valid-vote share is pooled into a weighted average. Weight = recency decay × (optional) √sample size, capped at 5,000; every pollster is treated as equally accurate. By default only each pollster's latest poll counts, so a firm that publishes every few days doesn't get extra say, and polls released more than 10 days before the vote are left out. Where a poll reported only total votes, the valid share is computed as Lula ÷ (Lula + Flávio).</p>
       <h3>2 · Model the uncertainty</h3>
       <p>The headline number isn't the point — the spread is. Each of 40,000 simulated elections draws a final margin from a normal distribution centered on the weighted average (plus any swing adjustment), with standard deviation set by the <code>polling error</code> slider. This "all polls off together" term dominates because pooled sampling error is negligible.</p>
+      <h3>Turnout and late deciders</h3>
+      <p>Valid-vote shares assume blank, null and undecided respondents stay out and that the people who vote look like the people polled. The turnout sliders relax both: a share of the blank/null/undecided pool can vote, split as you choose, and extra voters can arrive, also split as you choose. The result moves Lula's poll average before the swing slider, in every model on the page.</p>
       <h3>3 · Count</h3>
       <p>Lula's win probability is simply the share of the 40,000 simulations in which his share exceeds 50%. The distribution chart is the histogram of those draws.</p>
       <h3>Honest limits</h3>
@@ -401,7 +441,8 @@ const fmtField=f=>{ if(LANG!=='pt'||f==='—') return f;
   const m=/^([A-Z][a-z]{2}) (.+)$/.exec(f), i=m?MON_EN.indexOf(m[1]):-1;
   return i>=0&&!/[A-Za-z]/.test(m[2])?`${m[2]} ${MON_PT[i]}`:f.replace(/[A-Z][a-z]{2}/g,x=>MON_PT[MON_EN.indexOf(x)]||x); };
 
-const BASE = {sigma:2.0, bias:0, hl:5, nweight:true, latestOnly:true, exclOld:true};
+const BASE = {sigma:2.0, bias:0, hl:5, nweight:true, latestOnly:true, exclOld:true,
+  pool:8, conv:0, convL:50, turn:0, turnL:50};   // turnout sliders start neutral
 let S = {...BASE};
 const PRESETS = {
   base:      {...BASE},
@@ -451,6 +492,17 @@ function aggregate(){
   const m=list.reduce((a,p,i)=>a+p.lula*w[i],0)/W;      // weighted mean Lula share
   return {list,w,W,m};
 }
+// Turnout and late deciders: move Lula's valid-vote share L (in %) before the swing slider.
+// First a share of the blank/null/undecided pool votes, split convL:100-convL; then extra voters
+// arrive (turn% more valid votes), split turnL:100-turnL. Defaults leave L unchanged.
+function adjust(L){
+  let p=L/100;
+  const pool=S.pool/100, conv=pool*S.conv/100, v=1-pool;
+  if(conv>0) p=(p*v+conv*S.convL/100)/(v+conv);
+  const t=S.turn/100;
+  if(t>0) p=(p+t*S.turnL/100)/(1+t);
+  return p*100;
+}
 
 // ---------- normal RNG (Box–Muller on a seeded generator, so a reload gives the same odds) ----------
 let rngState=1;
@@ -468,7 +520,7 @@ function randn(){
 const N=40000;
 let samples=new Float64Array(N);
 function simulate(agg){
-  const center=agg.m + S.bias;
+  const center=adjust(agg.m) + S.bias;
   rngState=20261025; spare=null;
   let wins=0;                                   // simulations Lula wins
   for(let i=0;i<N;i++){
@@ -589,7 +641,7 @@ function trend(agg){
   const perDay=-b;                       // change per day moving toward the vote
   // The model's average sits at the weighted mean age of the polls it uses; project from there to day 0.
   const tbar=agg.list.reduce((a,p,i)=>a+p.days*agg.w[i],0)/agg.W;
-  const center=agg.m+S.bias, proj=center+perDay*tbar;
+  const center=adjust(agg.m)+S.bias, proj=center+perDay*tbar;
   const sd=Math.sqrt(S.sigma**2+(tbar*se*tq/1.96)**2);
   const pL=1-normCdf((50-proj)/sd);
   return {ok:true,repeat,perDay,se,tq,dof,tbar,center,proj,sd,pL,nObs};
@@ -668,43 +720,59 @@ function renderTrend(agg){
 // Student-t with 4 degrees of freedom has a closed-form CDF.
 function t4Cdf(t){ const u=t/Math.sqrt(1+t*t/4); return 0.5+0.375*u*(1-t*t/(12*(1+t*t/4))); }
 const Z80=1.2816, T4_80=1.5332;          // 90th percentiles of the normal and t(4)
+// First-round valid votes (TSE, as reported): Lula 45.16%, Flávio 47.03% → Lula's two-way share.
+const PRIOR_L=45.16/(45.16+47.03)*100, PRIOR_SD=3;
 function compareModels(agg){
-  const list=agg.list, bias=S.bias, sig=S.sigma, rows=[];
+  const list=agg.list, sig=S.sigma, rows=[];
+  const A=x=>adjust(x)+S.bias;             // turnout sliders, then the swing slider
   const normal=(c,sd)=>({c, pL:1-normCdf((50-c)/sd), lo:c-Z80*sd, hi:c+Z80*sd,
     pdf:x=>Math.exp(-(((x-c)/sd)**2)/2)/(sd*Math.sqrt(2*Math.PI))});
-  rows.push({key:'this', name:T('This dashboard','Este painel'), ...normal(agg.m+bias,sig),
+  rows.push({key:'this', name:T('This dashboard','Este painel'), ...normal(A(agg.m),sig),
     tip:T('<b>Weighted average of Lula\'s share + normal polling error.</b> Each poll is weighted by recency and, if ticked, sample size; the average is shifted by the swing slider and given a ±σ polling error set by the slider. Simple and transparent; assumes every pollster is equally accurate and that a miss of more than 2σ is very rare.',
       '<b>Média ponderada da fatia de Lula + erro normal das pesquisas.</b> Cada pesquisa é ponderada pela atualidade e, se marcado, pelo tamanho da amostra; a média é deslocada pelo controle de virada e recebe um erro de ±σ definido pelo controle. Simples e transparente; supõe que todos os institutos são igualmente precisos e que um erro maior que 2σ é muito raro.')});
   const avg=list.reduce((a,p)=>a+p.lula,0)/list.length;
-  rows.push({key:'avg', name:T('Simple average','Média simples'), ...normal(avg+bias,sig),
+  rows.push({key:'avg', name:T('Simple average','Média simples'), ...normal(A(avg),sig),
     tip:T('<b>Plain mean of the polls, no weights.</b> A 3-week-old poll counts as much as yesterday\'s and a 1,000-person poll as much as a 15,000-person one. Hard to game, but slow to react to late movement.',
       '<b>Média simples das pesquisas, sem pesos.</b> Uma pesquisa de três semanas vale tanto quanto a de ontem, e uma de 1.000 entrevistas tanto quanto uma de 15.000. Difícil de manipular, mas lenta para reagir a movimentos de última hora.')});
   const srt=list.map(p=>p.lula).sort((a,b)=>a-b), mid=srt.length>>1;
   const med=srt.length%2?srt[mid]:(srt[mid-1]+srt[mid])/2;
-  rows.push({key:'median', name:T('Median poll','Pesquisa mediana'), ...normal(med+bias,sig),
+  rows.push({key:'median', name:T('Median poll','Pesquisa mediana'), ...normal(A(med),sig),
     tip:T('<b>Middle poll, same polling error.</b> Ignores outliers entirely: one pollster far from the rest can\'t move it. Throws away information about how far the others lean.',
       '<b>Pesquisa do meio, mesmo erro.</b> Ignora totalmente os pontos fora da curva: um instituto muito distante dos demais não a move. Descarta a informação sobre o quanto os outros pendem para um lado.')});
-  const ct=agg.m+bias, sc=sig/Math.SQRT2;  // t(4) scaled to the same standard deviation as the slider
+  const ct=A(agg.m), sc=sig/Math.SQRT2;  // t(4) scaled to the same standard deviation as the slider
   rows.push({key:'t4', name:T('Fat tails (Student-t)','Caudas pesadas (t de Student)'), c:ct, pL:1-t4Cdf((50-ct)/sc), lo:ct-T4_80*sc, hi:ct+T4_80*sc,
     pdf:x=>0.375*(1+((x-ct)/sc)**2/4)**-2.5/sc,
     tip:T('<b>Same average and overall spread, but shaped like real polling errors.</b> A Student-t (4 degrees of freedom) is more peaked in the middle and has longer tails than a normal curve. Small misses become more common and big misses (like Brazil 2022) more likely too, so a modest lead looks a bit safer while a large upset is less far-fetched.',
       '<b>Mesma média e mesma dispersão, mas com o formato dos erros reais de pesquisa.</b> Uma t de Student (4 graus de liberdade) é mais pontuda no meio e tem caudas mais longas que a curva normal. Erros pequenos ficam mais comuns e erros grandes (como em 2022) também, então uma vantagem modesta parece um pouco mais segura, enquanto uma grande surpresa fica menos improvável.')});
   if(list.length>=2){
     const m=agg.m, sd=Math.sqrt(list.reduce((a,p)=>a+(p.lula-m)**2,0)/(list.length-1));
-    rows.push({key:'disagree', name:T('Pollster disagreement','Divergência entre institutos'), ...normal(m+bias,Math.max(sd,0.1)),
+    rows.push({key:'disagree', name:T('Pollster disagreement','Divergência entre institutos'), ...normal(A(m),Math.max(sd,0.1)),
       tip:T(`<b>Uses how much the pollsters disagree as the error.</b> Standard deviation across the selected polls is ±${fmt1(sd)} pts. If pollsters cluster tightly this looks confident, but they can all be wrong together, which this can't see.`,
         `<b>Usa a divergência entre os institutos como erro.</b> O desvio-padrão entre as pesquisas selecionadas é de ±${fmt1(sd)} pts. Se os institutos estiverem próximos, o resultado parece confiante, mas todos podem errar juntos, e isso este modelo não enxerga.`)});
   }
   let iv=0, ivm=0;
   list.forEach(p=>{ const v=p.lula*(100-p.lula)/p.n; iv+=1/v; ivm+=p.lula/v; });
-  rows.push({key:'sampling', name:T('Sampling error only','Só erro amostral'), ...normal(ivm/iv+bias,Math.sqrt(1/iv)),
+  rows.push({key:'sampling', name:T('Sampling error only','Só erro amostral'), ...normal(A(ivm/iv),Math.sqrt(1/iv)),
     tip:T(`<b>Pools the polls as if they were one big random sample.</b> Weights each poll by the inverse of its sampling variance, giving a margin of only ±${fmt1(Math.sqrt(1/iv))} pts. Shown as a warning: it ignores that polls share errors (who answers, turnout, wording), so it is badly overconfident.`,
       `<b>Junta as pesquisas como se fossem uma única grande amostra aleatória.</b> Pondera cada pesquisa pelo inverso da variância amostral, o que dá uma margem de apenas ±${fmt1(Math.sqrt(1/iv))} pts. Aparece como alerta: ignora que as pesquisas compartilham erros (quem responde, comparecimento, formulação da pergunta) e por isso é excessivamente confiante.`)});
+  // Bayesian: the first round as a prior, updated by the poll average.
+  const prec=1/sig**2+1/PRIOR_SD**2, bm=(A(agg.m)/sig**2+PRIOR_L/PRIOR_SD**2)/prec;
+  rows.push({key:'bayes', name:T('Bayesian (first-round prior)','Bayesiano (1º turno como base)'), ...normal(bm,Math.sqrt(1/prec)),
+    tip:T(`<b>Starts from the first round and lets the polls update it.</b> Prior: Lula's two-way share of the first-round valid vote, ${fmt1(PRIOR_L)}% (45.16% vs 47.03%, as reported from the TSE), give or take ${fmt1(PRIOR_SD)} pts. The poll average, with the polling-error slider as its uncertainty, pulls it toward the polls. Combining two sources narrows the range, so it is more confident than the dashboard; it is wrong if the runoff electorate differs a lot from the first round's.`,
+      `<b>Parte do primeiro turno e deixa as pesquisas atualizarem.</b> Base: a fatia de Lula entre os dois no voto válido do 1º turno, ${fmt1(PRIOR_L)}% (45,16% contra 47,03%, segundo o TSE), com margem de ±${fmt1(PRIOR_SD)} pts. A média das pesquisas, com o controle de erro como incerteza, puxa o valor na direção delas. Juntar duas fontes estreita a faixa, então é mais confiante que o painel; erra se o eleitorado do 2º turno for muito diferente do 1º.`)});
+  // Mixture: each selected poll is a possible truth, chosen with its weight.
+  const mw=agg.w.map(w=>w/agg.W), mc=list.map(p=>A(p.lula));
+  const mcdf=x=>mw.reduce((a,w,i)=>a+w*normCdf((x-mc[i])/sig),0);
+  const mq=q=>{ let lo=30,hi=70; for(let k=0;k<50;k++){ const md=(lo+hi)/2; mcdf(md)<q?lo=md:hi=md; } return (lo+hi)/2; };
+  rows.push({key:'mixture', name:T('Mixture of polls','Mistura de pesquisas'), c:mw.reduce((a,w,i)=>a+w*mc[i],0), pL:1-mcdf(50), lo:mq(.1), hi:mq(.9),
+    pdf:x=>mw.reduce((a,w,i)=>a+w*Math.exp(-(((x-mc[i])/sig)**2)/2)/(sig*Math.sqrt(2*Math.PI)),0),
+    tip:T('<b>Treats each poll as a possible truth.</b> Instead of averaging first, it asks "what if this pollster is the one that got it right?" for each selected poll, weighted like the dashboard, with the same polling error around each. When pollsters disagree the curve gets wider or even two-humped; when they agree it matches the dashboard.',
+      '<b>Trata cada pesquisa como uma verdade possível.</b> Em vez de tirar a média antes, pergunta "e se este instituto for o que acertou?" para cada pesquisa selecionada, com os mesmos pesos do painel e o mesmo erro em torno de cada uma. Quando os institutos divergem, a curva fica mais larga ou até com duas corcovas; quando concordam, coincide com a do painel.')});
   const tr=trend(agg);
   if(tr.ok) rows.push({key:'trend', name:T('Trend projection','Projeção da tendência'), ...normal(tr.proj,tr.sd), pL:tr.pL,
     tip:T('<b>Carries the recent within-pollster movement forward to 25 Oct.</b> See "Trend to election day" above. Adds the trend\'s own uncertainty to the polling error. Late trends often stall, so this is a what-if.',
       '<b>Projeta até 25/10 o movimento recente dentro de cada instituto.</b> Veja "Tendência até o dia da eleição" acima. Soma a incerteza da própria tendência ao erro das pesquisas. Tendências de última hora costumam parar, então isto é um "e se".')});
-  const ahead=list.reduce((a,p)=>a+(p.lula>50?1:p.lula===50?0.5:0),0);
+  const ahead=list.reduce((a,p)=>{ const v=A(p.lula); return a+(v>50?1:v===50?0.5:0); },0);
   rows.push({key:'count', name:T('Count of polls','Contagem de pesquisas'), c:null, pL:ahead/list.length, lo:null, hi:null, pdf:null,
     tip:T('<b>Share of selected polls with Lula ahead (ties count half).</b> Not really a probability: a poll at 50.1 counts the same as one at 55. Included because headlines often read the race this way.',
       '<b>Parcela das pesquisas selecionadas com Lula à frente (empates contam metade).</b> Não é bem uma probabilidade: uma pesquisa com 50,1 conta igual a uma com 55. Incluída porque as manchetes muitas vezes leem a disputa assim.')});
@@ -718,9 +786,9 @@ function renderCompare(agg){
   const rows=compareModels(agg);
   const wmax=Math.max(...rows.filter(r=>r.lo!==null).map(r=>r.hi-r.lo));
   // one x-axis for every chart so the curves can be compared by eye
-  const c0=agg.m+S.bias, half=Math.max(5,3.5*S.sigma);
-  const dom=[Math.max(40,Math.floor(Math.min(c0-half,...agg.list.map(p=>p.lula-1)))),
-             Math.min(60,Math.ceil(Math.max(c0+half,...agg.list.map(p=>p.lula+1))))];
+  const c0=adjust(agg.m)+S.bias, half=Math.max(5,3.5*S.sigma);
+  const dom=[Math.max(40,Math.floor(Math.min(c0-half,...agg.list.map(p=>p.lula-1),...rows.filter(r=>r.lo!==null).map(r=>r.lo-1)))),
+             Math.min(60,Math.ceil(Math.max(c0+half,...agg.list.map(p=>p.lula+1),...rows.filter(r=>r.hi!==null).map(r=>r.hi+1))))];
   rows.forEach((r,i)=>{
     const open=CMP_OPEN.has(r.key), id='cmpx'+i;
     const tr=document.createElement('tr'); tr.className=(r.key==='this'?'this ':'')+'mrow';
@@ -755,7 +823,7 @@ function drawModel(cv,r,[lo,hi],list){
   const colF=cssv('--flavio'), colL=cssv('--lula'), fg=cssv('--fg'), faint=cssv('--faint'), line=cssv('--line'), muted=cssv('--muted');
   c.font='11px "IBM Plex Mono",monospace'; c.textAlign='center'; c.textBaseline='top';
   const st=W<500?4:2;
-  for(let v=Math.ceil(lo/st)*st; v<=hi; v+=st){ c.fillStyle=faint; c.fillText(v+'%',X(v),y0+18); }
+  for(let v=Math.ceil(lo/st)*st; v<=hi; v+=st){ c.fillStyle=faint; c.textAlign=X(v)>x1-14?'right':X(v)<x0+14?'left':'center'; c.fillText(v+'%',X(v),y0+18); }
   c.strokeStyle=line; c.lineWidth=1; c.beginPath(); c.moveTo(x0,y0); c.lineTo(x1,y0); c.stroke();
   if(r.pdf){
     const n=160, xs=[...Array(n+1)].map((_,i)=>lo+(hi-lo)*i/n), ys=xs.map(r.pdf), m=Math.max(...ys)||1;
@@ -850,6 +918,12 @@ function render(){
   const mgcol=mg>=0?'--lula':'--flavio';
   $('sMargin').innerHTML=`<span style="color:var(${mgcol})">+${fmt1(Math.abs(mg*2))}</span> <small>${mgWho}</small>`;
 
+  const shift=adjust(agg.m)-agg.m;
+  $('adjNote').innerHTML=Math.abs(shift)<0.05
+    ?T('At these settings turnout and late deciders change nothing.','Com estes valores, comparecimento e indecisos não mudam nada.')
+    :T(`These sliders move Lula's poll average from ${fmt1(agg.m)}% to <b>${fmt1(agg.m+shift)}%</b> (${shift>0?'+':'−'}${fmt1(Math.abs(shift))} pts) before the swing slider.`,
+       `Estes controles levam a média de Lula de ${fmt1(agg.m)}% para <b>${fmt1(agg.m+shift)}%</b> (${shift>0?'+':'−'}${fmt1(Math.abs(shift))} pts) antes do controle de virada.`);
+
   draw(res);
 }
 
@@ -903,11 +977,18 @@ function syncInputs(){
   $('sigmaV').textContent='±'+fmt1(S.sigma)+' pts';
   $('biasV').textContent=(S.bias>0?'+':'')+fmt1(S.bias)+' pts'+(S.bias>0?' →Lula':S.bias<0?' →Flávio':'');
   $('hlV').textContent=fmt1(S.hl)+T(' days',' dias');
+  ['pool','conv','convL','turn','turnL'].forEach(k=>$(k).value=S[k]);
+  $('poolV').textContent=fmt1(S.pool)+'%';
+  $('convV').textContent=Math.round(S.conv)+'%';
+  $('convLV').textContent=T('Lula ','Lula ')+Math.round(S.convL)+'% · Flávio '+(100-Math.round(S.convL))+'%';
+  $('turnV').textContent='+'+fmt1(S.turn)+'%';
+  $('turnLV').textContent='Lula '+Math.round(S.turnL)+'% · Flávio '+(100-Math.round(S.turnL))+'%';
 }
 function bindRange(id,key){
   $(id).addEventListener('input',e=>{S[key]=parseFloat(e.target.value);syncInputs();render();});
 }
 bindRange('sigma','sigma');bindRange('bias','bias');bindRange('hl','hl');
+['pool','conv','convL','turn','turnL'].forEach(k=>bindRange(k,k));
 ['nweight','latestOnly'].forEach(k=>{
   $(k).addEventListener('change',e=>{S[k]=e.target.checked;render();});
 });
@@ -994,6 +1075,18 @@ const I18N_PT={
   hBias:`Desloca toda a distribuição. Positivo = a favor de Lula; negativo = a favor de Flávio (ex.: pesquisas subestimando a direita, como em 2022). Zero = usar a média das pesquisas como está.`,
   lHl:`Meia-vida do peso por atualidade`,
   hHl:`Com que rapidez as pesquisas antigas perdem peso. Com meia-vida de 5 dias, uma pesquisa de 5 dias atrás vale metade de uma de hoje.`,
+  hTurn:`Comparecimento e indecisos`,
+  nTurn:`O que as pesquisas não enxergam: quem de fato vai votar e para onde vão os eleitores que hoje dizem branco, nulo ou indeciso. Estes controles deslocam todos os modelos da página; nos valores iniciais não mudam nada.`,
+  lPool:`Brancos, nulos e indecisos`,
+  hPool:`Parcela dos entrevistados que não escolheu nenhum candidato. 8% é a média das últimas pesquisas Datafolha (5%), Quaest (9%) e Vox Brasil (10,3%).`,
+  lConv:`Desses, quantos acabam votando num candidato`,
+  hConv:`0% = todos continuam em branco, nulo ou em casa, que é o que os votos válidos supõem.`,
+  lConvL:`Fatia de Lula entre esses indecisos de última hora`,
+  hConvL:`50% = eles se dividem por igual e a disputa não muda. Acima de 50% pendem para Lula; abaixo, para Flávio.`,
+  lTurn:`Comparecimento além do que as pesquisas supõem`,
+  hTurn2:`Votos válidos extras, em porcentagem dos votos que as pesquisas já contam. 5% significa 5 eleitores a mais para cada 100 esperados.`,
+  lTurnL:`Fatia de Lula entre os eleitores extras`,
+  hTurnL:`50% = os novos eleitores se dividem como cara ou coroa e não mudam nada. Coloque acima de 50% se um comparecimento alto trouxer sobretudo eleitores de Lula.`,
   tExcl:`Excluir pesquisas com mais de 10 dias`,
   tLatest:`Só a pesquisa mais recente de cada instituto`,
   tSample:`Ponderar pelo tamanho da amostra`,
@@ -1011,6 +1104,8 @@ const I18N_PT={
       <p>A fatia de votos válidos de Lula em cada pesquisa entra numa média ponderada. Peso = decaimento por atualidade × (opcional) √tamanho da amostra, limitado a 5.000; todos os institutos são tratados como igualmente precisos. Por padrão, só a pesquisa mais recente de cada instituto conta, para que quem publica a cada poucos dias não ganhe peso extra, e pesquisas divulgadas mais de 10 dias antes da votação ficam de fora. Quando a pesquisa divulgou só votos totais, a fatia válida é calculada como Lula ÷ (Lula + Flávio).</p>
       <h3>2 · Modelar a incerteza</h3>
       <p>O número principal não é o mais importante — a dispersão é. Cada uma das 40.000 eleições simuladas sorteia um resultado de uma distribuição normal centrada na média ponderada (mais qualquer ajuste de virada), com desvio-padrão definido pelo controle de <code>erro das pesquisas</code>. Esse termo de "todas as pesquisas erram juntas" domina porque o erro amostral agregado é desprezível.</p>
+      <h3>Comparecimento e indecisos</h3>
+      <p>As fatias de votos válidos supõem que brancos, nulos e indecisos ficam de fora e que quem vota se parece com quem foi entrevistado. Os controles de comparecimento relaxam as duas coisas: uma parte dos brancos, nulos e indecisos pode votar, dividida como você escolher, e podem chegar eleitores extras, também divididos como você escolher. O resultado desloca a média de Lula antes do controle de virada, em todos os modelos da página.</p>
       <h3>3 · Contar</h3>
       <p>A probabilidade de vitória de Lula é simplesmente a parcela das 40.000 simulações em que a fatia dele passa de 50%. O gráfico de distribuição é o histograma desses sorteios.</p>
       <h3>Limites honestos</h3>
