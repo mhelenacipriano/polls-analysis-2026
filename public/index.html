@@ -268,7 +268,7 @@ body{margin:0;font-size:14px}
 
   <section class="card trend">
     <h2 data-i18n="hTrend">Trend to election day</h2>
-    <p class="note" data-i18n="nTrend">What happens if the recent movement in the checked polls carries on until the vote. Each pollster is compared only with itself, so a firm that always runs high for one candidate doesn't fake a trend. Uses every checked poll, including older waves from the same pollster. Lines join polls from the same pollster.</p>
+    <p class="note" data-i18n="nTrend">What happens if the recent movement in the checked polls carries on until the vote. Each pollster is compared only with itself, so a firm that always runs high for one candidate doesn't fake a trend. Uses every checked poll, including older waves from the same pollster and polls set aside by the 10-day rule. Lines join polls from the same pollster.</p>
     <div class="chartwrap"><canvas id="trendChart" data-i18n-attr="aria-label:aTrend" aria-label="Lula's valid-vote share in the checked polls by release date, with the trend line projected to 25 October"></canvas></div>
     <div class="legend">
       <span data-i18n="lgLahead"><span class="dot" style="background:var(--lula)"></span>poll with Lula ahead</span>
@@ -563,8 +563,10 @@ function normCdf(z){
   const e=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-z*z/2);
   return z>=0?(1+e)/2:(1-e)/2;
 }
+// The trend needs history, so it also keeps polls the 10-day rule set aside; polls unticked by hand stay out.
+const trendPolls=()=>POLLS.filter(p=>p.on||OLD_OFF.has(p.id));
 function trend(agg){
-  const on=POLLS.filter(p=>p.on), groups={};
+  const on=trendPolls(), groups={};
   on.forEach(p=>(groups[p.name]=groups[p.name]||[]).push(p));
   let sxx=0,sxy=0,nObs=0,nGroups=0; const repeat=[];
   for(const [name,ps] of Object.entries(groups)){
@@ -598,7 +600,7 @@ function drawTrend(tr){
   const cssW=tcanvas.clientWidth||600, cssH=Math.max(200,Math.round(cssW*0.42));
   tcanvas.width=cssW*dpr; tcanvas.height=cssH*dpr;
   tctx.setTransform(dpr,0,0,dpr,0,0); tctx.clearRect(0,0,cssW,cssH);
-  const on=POLLS.filter(p=>p.on); if(!on.length) return;
+  const on=trendPolls(); if(!on.length) return;
   const padL=40,padR=14,padT=12,padB=26, x0=padL,x1=cssW-padR,y0=cssH-padB,y1=padT;
   const dMax=Math.max(...on.map(p=>p.days))+0.5;
   const vals=on.map(p=>p.lula).concat([50]); if(tr.ok) vals.push(tr.proj, tr.center+tr.perDay*(tr.tbar-dMax));
@@ -643,8 +645,8 @@ function renderTrend(agg){
   const clear=msg=>{ ['tSlope','tProj','tOdds'].forEach(id=>$(id).textContent='—'); $('tNote').textContent=msg; };
   if(!agg){ drawTrend({ok:false}); clear(T('No polls selected.','Nenhuma pesquisa selecionada.')); return; }
   const tr=trend(agg); drawTrend(tr);
-  if(!tr.ok){ clear(T('Not enough to measure a trend: it needs at least one pollster with two checked polls released on different days. Untick "Exclude polls older than 10 days" or tick older waves in the table.',
-    'Dados insuficientes para medir uma tendência: é preciso pelo menos um instituto com duas pesquisas marcadas, divulgadas em dias diferentes. Desmarque "Excluir pesquisas com mais de 10 dias" ou marque rodadas anteriores na tabela.')); return; }
+  if(!tr.ok){ clear(T('Not enough to measure a trend: it needs at least one pollster with two checked polls released on different days. Tick older waves in the table.',
+    'Dados insuficientes para medir uma tendência: é preciso pelo menos um instituto com duas pesquisas marcadas, divulgadas em dias diferentes. Marque rodadas anteriores na tabela.')); return; }
   const who=v=>v>=0?'Lula':'Flávio', col=v=>v>=0?'--lula':'--flavio';
   const pd=tr.perDay, pL=Math.round(tr.pL*100);
   $('tSlope').innerHTML=`<span style="color:var(${col(pd)})">${pd>=0?'+':'−'}${fmtN(Math.abs(pd),2)}</span> <small>${T('pts/day','pts/dia')} ${who(pd)} · ±${fmtN(tr.se,2)}</small>`;
@@ -968,7 +970,7 @@ const I18N_PT={
   kRange:`Faixa de 80% · Lula`,
   kMargin:`Margem esperada`,
   hTrend:`Tendência até o dia da eleição`,
-  nTrend:`O que acontece se o movimento recente nas pesquisas marcadas continuar até a votação. Cada instituto é comparado apenas consigo mesmo, então um instituto que sempre dá números altos para um candidato não cria uma tendência falsa. Usa todas as pesquisas marcadas, inclusive rodadas anteriores do mesmo instituto. As linhas ligam pesquisas do mesmo instituto.`,
+  nTrend:`O que acontece se o movimento recente nas pesquisas marcadas continuar até a votação. Cada instituto é comparado apenas consigo mesmo, então um instituto que sempre dá números altos para um candidato não cria uma tendência falsa. Usa todas as pesquisas marcadas, inclusive rodadas anteriores do mesmo instituto e as deixadas de fora pela regra dos 10 dias. As linhas ligam pesquisas do mesmo instituto.`,
   aTrend:`Fatia de votos válidos de Lula nas pesquisas marcadas, por data de divulgação, com a linha de tendência projetada até 25 de outubro`,
   lgLahead:`<span class="dot" style="background:var(--lula)"></span>pesquisa com Lula à frente`,
   lgFahead:`<span class="dot" style="background:var(--flavio)"></span>Flávio à frente`,
