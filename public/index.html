@@ -118,7 +118,8 @@ body{margin:0;font-size:14px}
 
   /* ---- distribution ---- */
   .dist,.trend{padding:18px 16px 14px}
-  .trend .ttog{margin:2px 4px 12px}
+  .trend .ttog{margin:2px 4px 10px}
+  .trend .ttog:has(input:disabled){opacity:.45}
   .dist h2,.trend h2{font-size:15px;padding:0 4px}
   .dist .note,.trend .note{font-size:12.5px;color:var(--muted);padding:3px 4px 10px}
   .trend .stat{background:var(--surface-2)}
@@ -334,6 +335,7 @@ body{margin:0;font-size:14px}
     <h2 data-i18n="hTrend">Trend to election day</h2>
     <p class="note" data-i18n="nTrend">How Lula's valid-vote share has moved over the campaign, and where a straight-line trend points for 25 Oct. Each pollster is compared only with itself, so a house lean can't fake a trend.</p>
     <label class="tog ttog"><input type="checkbox" id="trendAll"><span data-i18n="tTrendAll">Measure from all pollsters (house-adjusted) — stronger estimate</span></label>
+    <label class="tog ttog" id="trendRecentRow"><input type="checkbox" id="trendRecent"><span data-i18n="tTrendRecent">Weight recent polls more (uses the half-life slider)</span></label>
     <div class="chartwrap"><canvas id="trendChart" data-i18n-attr="aria-label:aTrend" aria-label="Lula's valid-vote share in the checked polls by release date, with the trend line projected to 25 October"></canvas></div>
     <div class="legend">
       <span data-i18n="lgLahead"><span class="dot" style="background:var(--lula)"></span>poll with Lula ahead</span>
@@ -541,7 +543,7 @@ const HIST_CONV=Math.round(HISTORY.reduce((a,h)=>a+h.conv,0)/HISTORY.length/5)*5
 // Lula's share as the model reads it: the published figure, minus the pollster's past miss when the correction is on.
 const LS=p=>p.lula-(S.house?houseErr(p.name):0);
 
-const BASE = {sigma:2.0, bias:0, hl:5, nweight:true, latestOnly:true, exclOld:true, house:false, trendAll:true,
+const BASE = {sigma:2.0, bias:0, hl:5, nweight:true, latestOnly:true, exclOld:true, house:false, trendAll:true, trendRecent:false,
   pool:8, conv:HIST_CONV, convL:50, turn:HIST_TURN, turnL:50};   // turnout defaults come from 2018 and 2022
 let S = {...BASE};
 const PRESETS = {
@@ -798,32 +800,34 @@ function drawTrend(tr){
 // All pollsters, fixed effects: each pollster compared only with itself, so house leans
 // cancel and every wave counts. Projects the field's average to election day.
 function trendAllField(){
+  // Optionally weight each poll by recency (exp half-life), so the slope reflects the recent
+  // movement more. Weighted fixed effects: demean each pollster with the same weights.
+  const hl=S.hl, wt=p=>S.trendRecent?Math.pow(0.5,fieldEnd(p)/hl):1;
   const groups={}; POLLS.forEach(p=>(groups[p.name]=groups[p.name]||[]).push(p));
-  let sxx=0,sxy=0,nObs=0,nG=0; const repeat=[], sample=[], mean={};
+  let sxx=0,sxy=0,nObs=0,nG=0,sw=0,swt=0,swy=0; const repeat=[], sample=[], mean={}, tmean={};
   for(const [name,ps] of Object.entries(groups)){
     if(!(ps.length>1 && ps.some(p=>fieldEnd(p)!==fieldEnd(ps[0])))) continue;
     repeat.push(name); sample.push(...ps);
-    const tm=ps.reduce((a,p)=>a+fieldEnd(p),0)/ps.length, ym=ps.reduce((a,p)=>a+p.lula,0)/ps.length;
-    mean[name]=ym;
-    ps.forEach(p=>{ sxx+=(fieldEnd(p)-tm)**2; sxy+=(fieldEnd(p)-tm)*(p.lula-ym); });
-    nObs+=ps.length; nG++;
+    let W=0,tw=0,yw=0; ps.forEach(p=>{ const w=wt(p); W+=w; tw+=w*fieldEnd(p); yw+=w*p.lula; });
+    const tm=tw/W, ym=yw/W; mean[name]=ym; tmean[name]=tm;
+    ps.forEach(p=>{ const w=wt(p); sxx+=w*(fieldEnd(p)-tm)**2; sxy+=w*(fieldEnd(p)-tm)*(p.lula-ym); });
+    sw+=W; swt+=tw; swy+=yw; nObs+=ps.length; nG++;
   }
   const dof=nObs-nG-1;
   if(!repeat.length||sxx===0||dof<1) return {ok:false,all:true,repeat};
   const b=sxy/sxx;
   let rss=0;
-  for(const name of repeat){ const ps=groups[name];
-    ps.forEach(p=>{ rss+=((p.lula-mean[name])-b*(fieldEnd(p)-( ps.reduce((a,q)=>a+fieldEnd(q),0)/ps.length )))**2; }); }
+  for(const name of repeat){ const ps=groups[name], ym=mean[name], tm=tmean[name];
+    ps.forEach(p=>{ rss+=wt(p)*((p.lula-ym)-b*(fieldEnd(p)-tm))**2; }); }
   const se=Math.sqrt(rss/dof/sxx);
   const tq=dof<=10?[12.71,4.30,3.18,2.78,2.57,2.45,2.36,2.31,2.26,2.23][dof-1]:2.03;
   const perDay=-b;
-  const grand=sample.reduce((a,p)=>a+p.lula,0)/sample.length;
-  const dbar=sample.reduce((a,p)=>a+fieldEnd(p),0)/sample.length;
-  const off=(adjust(grand)-grand)+S.bias;          // turnout + swing settings, as one shift
+  const grand=swy/sw, dbar=swt/sw;                  // recency-weighted field average and mean age
+  const off=(adjust(grand)-grand)+S.bias;           // turnout + swing settings, as one shift
   const lineAt=d=>grand+perDay*(dbar-d)+off;
   const proj=lineAt(0), sd=Math.sqrt(S.sigma**2+(dbar*se*tq/1.96)**2);
   const adj=sample.map(p=>({d:fieldEnd(p), y:p.lula-mean[p.name]+grand+off}));
-  return {ok:true,all:true,repeat,perDay,se,tq,dof,tbar:dbar,grandRaw:grand+off,proj,sd,
+  return {ok:true,all:true,recent:S.trendRecent,hl,repeat,perDay,se,tq,dof,tbar:dbar,grandRaw:grand+off,proj,sd,
           pL:1-normCdf((50-proj)/sd),nObs,adj,lineAt};
 }
 function drawTrendAll(tr){
@@ -869,10 +873,12 @@ function renderTrend(agg){
   if(tr.all){
     $('tNote').innerHTML=T(
       `Measured across all ${nR} pollsters that have repeat polls — ${tr.nObs} polls in all — each compared only with itself, so house leans cancel out (a fixed-effects regression). `+
+      (tr.recent?`Recent polls count more here (half-life ${fmt1(tr.hl)} days), so this follows the latest movement. `:``)+
       (sig?`The movement is small next to its uncertainty. `:`<b>The movement is clearly different from no change (95% confidence).</b> `)+
       `The field averaged ${fmt1(tr.grandRaw)}% for Lula about ${fmt1(tr.tbar)} days out; at this rate that reaches <b>${fmt1(tr.proj)}%</b> on 25 Oct. `+
       `Odds combine the polling-error slider (±${fmt1(S.sigma)} pts) with the trend's own uncertainty. It assumes a straight-line trend holds to the vote — a late stall or reversal is still possible. Dots are each poll with its pollster's house lean removed.`,
       `Medida com todos os ${nR} institutos que têm pesquisas repetidas — ${tr.nObs} pesquisas no total — cada um comparado só consigo mesmo, para que as tendências de casa se anulem (regressão de efeitos fixos). `+
+      (tr.recent?`As pesquisas recentes pesam mais aqui (meia-vida ${fmt1(tr.hl)} dias), então acompanha o movimento mais recente. `:``)+
       (sig?`O movimento é pequeno diante da sua incerteza. `:`<b>O movimento é claramente diferente de nenhuma mudança (95% de confiança).</b> `)+
       `O conjunto teve média de ${fmt1(tr.grandRaw)}% para Lula cerca de ${fmt1(tr.tbar)} dias antes; nesse ritmo chega a <b>${fmt1(tr.proj)}%</b> em 25/10. `+
       `As chances combinam o controle de erro (±${fmt1(S.sigma)} pts) com a incerteza da tendência. Supõe uma tendência linear até a votação — uma parada ou reversão de última hora ainda é possível. Os pontos são cada pesquisa com a tendência de casa do instituto removida.`);
@@ -1203,6 +1209,7 @@ $('selNone').addEventListener('click',()=>setShown(false));
 function syncInputs(){
   $('sigma').value=S.sigma; $('bias').value=S.bias; $('hl').value=S.hl;
   $('nweight').checked=S.nweight; $('house').checked=S.house; $('trendAll').checked=S.trendAll;
+  $('trendRecent').checked=S.trendRecent; $('trendRecent').disabled=!S.trendAll;
   $('latestOnly').checked=S.latestOnly; $('exclOld').checked=S.exclOld;
   $('sigmaV').textContent='±'+fmt1(S.sigma)+' pts';
   $('biasV').textContent=(S.bias>0?'+':'')+fmt1(S.bias)+' pts'+(S.bias>0?' →Lula':S.bias<0?' →Flávio':'');
@@ -1219,8 +1226,8 @@ function bindRange(id,key){
 }
 bindRange('sigma','sigma');bindRange('bias','bias');bindRange('hl','hl');
 ['pool','conv','convL','turn','turnL'].forEach(k=>bindRange(k,k));
-['nweight','latestOnly','house','trendAll'].forEach(k=>{
-  $(k).addEventListener('change',e=>{S[k]=e.target.checked;render();});
+['nweight','latestOnly','house','trendAll','trendRecent'].forEach(k=>{
+  $(k).addEventListener('change',e=>{S[k]=e.target.checked; $('trendRecent').disabled=!S.trendAll; render();});
 });
 // Ticking "Exclude polls older than 10 days" unticks those polls in the table; unticking it restores
 // only the ones it removed (polls you unticked yourself stay unticked).
@@ -1342,6 +1349,7 @@ const I18N_PT={
   hTurnL:`50% = os eleitores que chegam ou deixam de votar se dividem como cara ou coroa e não mudam nada. Coloque acima de 50% se um comparecimento alto trouxer sobretudo eleitores de Lula.`,
   tHouse:`Corrigir pelos erros passados das pesquisas (2018, 2022)`,
   tTrendAll:`Medir com todos os institutos (ajustado por casa) — estimativa mais forte`,
+  tTrendRecent:`Dar mais peso às pesquisas recentes (usa o controle de meia-vida)`,
   hHist:`2º turnos anteriores: últimas pesquisas × resultado`,
   hBig:`Maiores institutos, pesquisa a pesquisa`,
   nBig:`Todas as pesquisas de 2º turno dos institutos com as maiores amostras, mais Datafolha, Quaest e Vox Brasil. Números de votos válidos como divulgados, sem correção, pelo último dia de campo. Mostra todas as pesquisas deles, independentemente do que está marcado abaixo.`,
