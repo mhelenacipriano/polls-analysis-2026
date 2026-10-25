@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Lula–Flávio Runoff Model</title>
 <meta name="description" content="Monte Carlo model of the 2026 Brazilian presidential runoff, built on published valid-vote polls.">
+<script>
+  // Theme: light by default; a saved choice wins. Set before paint to avoid a flash.
+  try{ var _t=localStorage.getItem('theme'); document.documentElement.setAttribute('data-theme', _t==='dark'?'dark':'light'); }
+  catch(e){ document.documentElement.setAttribute('data-theme','light'); }
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -56,11 +61,30 @@ body{margin:0;font-size:14px}
   .eyebrow{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
     color:var(--faint);margin:0 0 6px}
   header{position:relative}
-  .lang{position:absolute;top:0;right:0;display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--surface)}
+  .topbar{position:absolute;top:0;right:0;display:flex;gap:8px;align-items:center}
+  .lang{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--surface)}
   .lang button{font:600 11.5px var(--font-mono);letter-spacing:.06em;padding:5px 10px;border:none;background:none;color:var(--muted);cursor:pointer}
   .lang button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
   .lang button:focus-visible{outline:2px solid var(--flavio);outline-offset:-2px}
-  header .eyebrow{padding-right:92px}
+  header .eyebrow{padding-right:140px}
+  .theme{display:grid;place-items:center;width:30px;height:30px;border:1px solid var(--line);border-radius:999px;
+    background:var(--surface);color:var(--muted);cursor:pointer;font-size:14px;line-height:1}
+  .theme:hover{border-color:var(--muted)}
+  .theme:focus-visible{outline:2px solid var(--flavio);outline-offset:2px}
+  /* password gate */
+  #gate{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:var(--bg);
+    padding:24px;overflow:auto}
+  #gate .box{width:100%;max-width:340px;text-align:center}
+  #gate h1{font-family:var(--font-display);font-size:22px;margin:0 0 6px}
+  #gate p{color:var(--muted);font-size:13px;margin:0 0 18px}
+  #gate form{display:flex;gap:8px}
+  #gate input{flex:1;min-width:0;font-family:var(--font-body);font-size:15px;padding:11px 13px;
+    border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--fg)}
+  #gate input:focus-visible{outline:2px solid var(--flavio);outline-offset:1px}
+  #gate button{font-family:var(--font-body);font-size:15px;font-weight:600;padding:11px 16px;border:none;
+    border-radius:10px;background:var(--fg);color:var(--bg);cursor:pointer}
+  #gate .err{color:var(--lula);font-size:13px;margin-top:12px;min-height:18px}
+  #gate .eyebrow{justify-content:center;margin-bottom:18px}
   header h1{font-size:clamp(26px,6vw,38px);font-weight:800;letter-spacing:-.02em}
   .sub{color:var(--muted);font-size:14.5px;margin:8px 0 0;max-width:62ch}
   .disc{font-size:12.5px;color:var(--faint);margin-top:14px;padding:10px 12px;border:1px solid var(--line);
@@ -245,9 +269,24 @@ body{margin:0;font-size:14px}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div id="gate" hidden>
+  <div class="box">
+    <p class="eyebrow" data-i18n="eyebrow">2026 Brazilian Presidential Runoff · Monte Carlo</p>
+    <h1 data-i18n="gateH">Enter password</h1>
+    <p data-i18n="gateP">This page is password-protected.</p>
+    <form id="gateForm" autocomplete="off">
+      <input type="password" id="gatePw" aria-label="Password" data-i18n-attr="placeholder:gatePh" placeholder="Password" autofocus>
+      <button type="submit" data-i18n="gateGo">Enter</button>
+    </form>
+    <div class="err" id="gateErr" aria-live="polite"></div>
+  </div>
+</div>
+<div class="wrap" id="app" hidden>
   <header>
-    <div class="lang" role="group" aria-label="Language / Idioma"><button type="button" data-lang="en" lang="en">EN</button><button type="button" data-lang="pt" lang="pt-BR">PT</button></div>
+    <div class="topbar">
+      <button type="button" class="theme" id="themeBtn" aria-label="Light or dark theme"></button>
+      <div class="lang" role="group" aria-label="Language / Idioma"><button type="button" data-lang="en" lang="en">EN</button><button type="button" data-lang="pt" lang="pt-BR">PT</button></div>
+    </div>
     <p class="eyebrow" data-i18n="eyebrow">2026 Brazilian Presidential Runoff · Monte Carlo</p>
     <h1 data-i18n="h1">Can Lula win? — tomorrow's odds</h1>
     <p class="sub" data-i18n="sub">A probabilistic model of Lula's chance in the October 25 second round against Flávio Bolsonaro, aggregating the public valid-vote polls and simulating 40,000 elections. Move the sliders to test different assumptions about polling error and late swing.</p>
@@ -1173,6 +1212,10 @@ function setAsof(){
 
 const I18N_PT={
   eyebrow:`2º turno presidencial 2026 · Monte Carlo`,
+  gateH:`Digite a senha`,
+  gateP:`Esta página é protegida por senha.`,
+  gatePh:`Senha`,
+  gateGo:`Entrar`,
   h1:`Lula pode vencer? — as chances de amanhã`,
   sub:`Um modelo probabilístico da chance de Lula no segundo turno de 25 de outubro contra Flávio Bolsonaro. Ele agrega as pesquisas públicas de votos válidos e simula 40.000 eleições. Mova os controles para testar outras hipóteses sobre o erro das pesquisas e uma virada de última hora.`,
   disc:`<b>Isto é um modelo, não uma previsão.</b> A disputa está em empate estatístico; as pesquisas podem errar todas juntas, como mostrou o segundo turno de 2022. O resultado é uma faixa de desfechos plausíveis sob hipóteses que você controla — não um prognóstico de quem vai ganhar.`,
@@ -1294,9 +1337,45 @@ function setLang(l){
   setAsof(); renderHistory(); syncInputs(); if(POLLS.length){ render(); renderInstGrid(); }
 }
 document.querySelectorAll('.lang button').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
-applyStatic();
-renderHistory();
-boot();
+
+// ---------- light / dark theme (light by default) ----------
+function curTheme(){ return document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light'; }
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  try{ localStorage.setItem('theme',t); }catch(e){}
+  const b=$('themeBtn'); if(b){ b.textContent=t==='dark'?'☀':'☾';
+    b.setAttribute('aria-label',t==='dark'?T('Switch to light theme','Mudar para tema claro'):T('Switch to dark theme','Mudar para tema escuro')); }
+  if(typeof POLLS!=='undefined' && POLLS.length){ redrawCharts(); }
+}
+$('themeBtn').addEventListener('click',()=>applyTheme(curTheme()==='dark'?'light':'dark'));
+applyTheme(curTheme());
+
+// ---------- password gate ----------
+// SHA-256 of the password; the plaintext is not in the page. A static-page gate
+// only hides the content — the page source and polls.json are still downloadable.
+const PW_HASH='a31c8cf244df0b8d1f74f1d3fbf34aa93e41b1361946e9e62d555d3cff72644b';
+let booted=false;
+async function sha256(str){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
+  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+function openApp(){
+  $('gate').hidden=true; $('app').hidden=false;
+  if(!booted){ booted=true; applyStatic(); renderHistory(); boot(); }
+}
+function lockApp(){
+  $('app').hidden=true; $('gate').hidden=false;
+  applyStatic();                               // translate the gate itself
+  setTimeout(()=>$('gatePw').focus(),0);
+}
+$('gateForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const ok=await sha256($('gatePw').value)===PW_HASH;
+  if(ok){ try{ sessionStorage.setItem('unlocked','1'); }catch(e){} openApp(); }
+  else{ $('gateErr').textContent=T('Wrong password.','Senha incorreta.'); $('gatePw').select(); }
+});
+let unlocked=false; try{ unlocked=sessionStorage.getItem('unlocked')==='1'; }catch(e){}
+if(unlocked) openApp(); else lockApp();
 </script>
 </body>
 </html>
