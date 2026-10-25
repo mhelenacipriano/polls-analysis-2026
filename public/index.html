@@ -467,7 +467,7 @@ body{margin:0;font-size:14px}
       <h3>2 · Model the uncertainty</h3>
       <p>The headline number isn't the point — the spread is. Each of 40,000 simulated elections draws a final margin from a normal distribution centered on the weighted average (plus any swing adjustment), with standard deviation set by the <code>polling error</code> slider. This "all polls off together" term dominates because pooled sampling error is negligible.</p>
       <h3>Past poll errors</h3>
-      <p>In the 2018 and 2022 runoffs, the final Datafolha and Quaest polls overstated the PT candidate by 0.5 to 1.2 points of the two-candidate vote. With the correction on (the default), each poll's Lula share is lowered by its pollster's average miss before anything else; pollsters without a record get the average. The poll table still shows the published numbers.</p>
+      <p>In the 2018 and 2022 runoffs, the final Datafolha and Quaest polls overstated the PT candidate by 0.5 to 1.2 points of the two-candidate vote. With the correction on (it is off by default), each poll's Lula share is lowered by its pollster's average miss before anything else; pollsters without a record get the average. The poll table still shows the published numbers.</p>
       <h3>Turnout and late deciders</h3>
       <p>Valid-vote shares assume blank, null and undecided respondents stay out and that the people who vote look like the people polled. The turnout sliders relax both: a share of the blank/null/undecided pool can vote, split as you choose, and extra voters can arrive, also split as you choose. The result moves Lula's poll average before the swing slider, in every model on the page.</p>
       <h3>3 · Count</h3>
@@ -539,7 +539,7 @@ const HIST_CONV=Math.round(HISTORY.reduce((a,h)=>a+h.conv,0)/HISTORY.length/5)*5
 // Lula's share as the model reads it: the published figure, minus the pollster's past miss when the correction is on.
 const LS=p=>p.lula-(S.house?houseErr(p.name):0);
 
-const BASE = {sigma:2.0, bias:0, hl:5, nweight:true, latestOnly:true, exclOld:true, house:true,
+const BASE = {sigma:2.0, bias:0, hl:5, nweight:true, latestOnly:true, exclOld:true, house:false,
   pool:8, conv:HIST_CONV, convL:50, turn:HIST_TURN, turnL:50};   // turnout defaults come from 2018 and 2022
 let S = {...BASE};
 const PRESETS = {
@@ -1288,7 +1288,7 @@ const I18N_PT={
       <h3>2 · Modelar a incerteza</h3>
       <p>O número principal não é o mais importante — a dispersão é. Cada uma das 40.000 eleições simuladas sorteia um resultado de uma distribuição normal centrada na média ponderada (mais qualquer ajuste de virada), com desvio-padrão definido pelo controle de <code>erro das pesquisas</code>. Esse termo de "todas as pesquisas erram juntas" domina porque o erro amostral agregado é desprezível.</p>
       <h3>Erros passados das pesquisas</h3>
-      <p>Nos 2º turnos de 2018 e 2022, as últimas pesquisas Datafolha e Quaest superestimaram o candidato do PT em 0,5 a 1,2 ponto da disputa entre os dois. Com a correção marcada (o padrão), a fatia de Lula em cada pesquisa é reduzida pelo erro médio do instituto antes de tudo; institutos sem histórico recebem a média. A tabela de pesquisas continua mostrando os números divulgados.</p>
+      <p>Nos 2º turnos de 2018 e 2022, as últimas pesquisas Datafolha e Quaest superestimaram o candidato do PT em 0,5 a 1,2 ponto da disputa entre os dois. Com a correção marcada (vem desmarcada por padrão), a fatia de Lula em cada pesquisa é reduzida pelo erro médio do instituto antes de tudo; institutos sem histórico recebem a média. A tabela de pesquisas continua mostrando os números divulgados.</p>
       <h3>Comparecimento e indecisos</h3>
       <p>As fatias de votos válidos supõem que brancos, nulos e indecisos ficam de fora e que quem vota se parece com quem foi entrevistado. Os controles de comparecimento relaxam as duas coisas: uma parte dos brancos, nulos e indecisos pode votar, dividida como você escolher, e podem chegar eleitores extras, também divididos como você escolher. O resultado desloca a média de Lula antes do controle de virada, em todos os modelos da página.</p>
       <h3>3 · Contar</h3>
