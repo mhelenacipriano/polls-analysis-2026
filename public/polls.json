@@ -45,7 +45,7 @@
     "flavio": 49.1,
     "groupA": false,
     "reg": "BR-09623/2026",
-    "src": "https://exame.com/brasil/pesquisa-vox-brasil-lula-tem-442-e-flavio-bolsonaro-427-no-2o-turno/"
+    "src": "https://www.metropoles.com/brasil/vox-brasil-no-2o-turno-lula-tem-5086-e-flavio-4914-dos-votos-validos"
   },
   {
     "id": "pd1",
@@ -274,5 +274,77 @@
     "groupA": true,
     "reg": "BR-02136/2026",
     "src": "https://forbes.com.br/geral/2026/10/flavio-tem-463-e-lula-soma-45-na-vespera-do-2o-turno-aponta-pesquisa-cnt-mda/"
+  },
+  {
+    "id": "at3",
+    "name": "AtlasIntel",
+    "field": "Oct 18-23",
+    "released": "2026-10-24",
+    "days": 1,
+    "n": 4990,
+    "flavio": 50.8,
+    "groupA": true,
+    "reg": "BR-06380/2026",
+    "src": "https://www.bloomberglinea.com.br/brasil/pesquisas-indicam-cenario-acirrado-com-flavio-e-lula-empatados-dentro-da-margem-de-erro/"
+  },
+  {
+    "id": "ge2",
+    "name": "Gerp",
+    "field": "Oct 21-24",
+    "released": "2026-10-24",
+    "days": 1,
+    "n": 2400,
+    "flavio": 52.0,
+    "groupA": false,
+    "reg": "BR-09327/2026",
+    "src": "https://www.gazetadopovo.com.br/eleicoes/2026/pesquisa-eleitoral-2026/o-que-dizem-as-pesquisas-para-presidente-na-vespera-do-segundo-turno/"
+  },
+  {
+    "id": "fu1",
+    "name": "Futura",
+    "field": "Oct 23-24",
+    "released": "2026-10-24",
+    "days": 1,
+    "n": 2000,
+    "flavio": 50.1,
+    "groupA": false,
+    "reg": "BR-09726/2026",
+    "src": "https://www.gazetadopovo.com.br/eleicoes/2026/pesquisa-eleitoral-2026/o-que-dizem-as-pesquisas-para-presidente-na-vespera-do-segundo-turno/"
+  },
+  {
+    "id": "nx3",
+    "name": "BTG/Nexus",
+    "field": "Oct 23-24",
+    "released": "2026-10-24",
+    "days": 1,
+    "n": 2000,
+    "flavio": 50.5,
+    "groupA": false,
+    "reg": "BR-08234/2026",
+    "src": "https://www.bloomberglinea.com.br/brasil/pesquisas-indicam-cenario-acirrado-com-flavio-e-lula-empatados-dentro-da-margem-de-erro/"
+  },
+  {
+    "id": "qu3",
+    "name": "Quaest",
+    "field": "Oct 23-24",
+    "released": "2026-10-24",
+    "days": 1,
+    "n": 3702,
+    "flavio": 51.0,
+    "groupA": true,
+    "reg": "BR-09158/2026",
+    "src": "https://www.jornalfolhadoestado.com/politica/quaest-2o-turno-votos-validos-flavio-bolsonaro-51-lula-49/"
+  },
+  {
+    "id": "df3",
+    "name": "Datafolha",
+    "field": "Oct 23-24",
+    "released": "2026-10-24",
+    "days": 1,
+    "n": 4050,
+    "flavio": 51.0,
+    "groupA": true,
+    "reg": "BR-09540/2026",
+    "src": "https://www.terra.com.br/noticias/brasil/politica/pesquisa-datafolha-flavio-tem-51-e-lula-49-dos-votos-validos-na-vespera-do-2-turno"
   }
 ]
