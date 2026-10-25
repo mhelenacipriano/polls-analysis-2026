@@ -97,7 +97,20 @@ body{margin:0;font-size:14px}
   .dist h2,.trend h2{font-size:15px;padding:0 4px}
   .dist .note,.trend .note{font-size:12.5px;color:var(--muted);padding:3px 4px 10px}
   .trend .stat{background:var(--surface-2)}
-  .compare,.history{padding:18px 16px 14px}
+  .compare,.history,.insts-sec{padding:18px 16px 14px}
+  .insts-sec h2{font-size:15px;padding:0 4px}
+  .insts-sec .note{font-size:12.5px;color:var(--muted);padding:3px 4px 10px}
+  .igrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  @media (max-width:640px){.igrid{grid-template-columns:1fr}}
+  .icard{border:1px solid var(--line);border-radius:10px;padding:12px 12px 8px;background:var(--surface)}
+  .icard .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .icard h3{font-size:15px}
+  .icard .last{font-size:11.5px;color:var(--muted);font-family:var(--font-mono)}
+  .icard .score{font-size:15px;margin-top:4px}
+  .icard .score b{font-weight:700}
+  .icard .chg{font-size:12.5px;color:var(--muted);margin-top:1px}
+  .icard canvas{margin-top:6px}
+  .icard .foot{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;color:var(--faint);margin-top:2px}
   .history h2{font-size:15px;padding:0 4px}
   .history .note{font-size:12.5px;color:var(--muted);padding:3px 4px 10px}
   .history h3{font-size:13px;margin:14px 4px 6px}
@@ -294,6 +307,12 @@ body{margin:0;font-size:14px}
     <p class="note" id="tNote" style="margin-top:10px">—</p>
   </section>
 
+  <section class="card insts-sec">
+    <h2 data-i18n="hBig">Biggest pollsters, poll by poll</h2>
+    <p class="note" data-i18n="nBig">Every runoff poll from the pollsters with the largest samples, plus Datafolha, Quaest and Vox Brasil. Published valid-vote figures, before any correction, plotted by the last day of fieldwork. Shows all their polls, whatever is ticked below.</p>
+    <div class="igrid" id="instGrid"></div>
+  </section>
+
   <section class="card compare">
     <h2 data-i18n="hCmp">Other ways to read the same polls</h2>
     <p class="note" data-i18n="nCmp">The same checked polls and settings, run through different probability models. Hover or tap <span class="info-i" aria-hidden="true">i</span> for how each one works and where it goes wrong; open ▸ to see its curve. <b>Precision</b> is the width of the 80% range: narrower means more certain, not more accurate. No model can be scored until the result is in.</p>
@@ -384,7 +403,7 @@ body{margin:0;font-size:14px}
 
   <section class="card polls">
     <h2 data-i18n="hPolls">Polls in the model</h2>
-    <p class="note" data-i18n="nPolls">Published valid-vote two-way share (blank, null and undecided excluded); the model may lower Lula's figure by the pollster's past miss. Only Datafolha, Quaest and Vox Brasil are ticked when the page opens; tick any other poll, or a whole institute, to add it. Bars show each poll's current weight; dimmed rows are out of the model, and the weight column says why (e.g. "replaced": an older wave from a pollster with a newer poll — untick "Latest poll per pollster only" to count it). Source links go to the report each number was taken from; look up a registration number in the TSE's <a href="https://pesqele-divulgacao.tse.jus.br/app/pesquisa/listar.xhtml" target="_blank" rel="noopener">PesqEle</a> ("Número de identificação") — it holds the method, not the results.</p>
+    <p class="note" data-i18n="nPolls">Published valid-vote two-way share (blank, null and undecided excluded); the model may lower Lula's figure by the pollster's past miss. Only Datafolha, Quaest and Vox Brasil are ticked when the page opens; tick any other poll, or a whole institute, to add it. Bars show each poll's current weight; dimmed rows are out of the model, and the weight column says why (e.g. "replaced": an older wave from a pollster with a newer poll — untick "Latest poll per pollster only" to count it). Source links go to the report each number was taken from; polls with no sample size or registration come from the urnaaberta.com.br aggregator (hover the link for details); look up a registration number in the TSE's <a href="https://pesqele-divulgacao.tse.jus.br/app/pesquisa/listar.xhtml" target="_blank" rel="noopener">PesqEle</a> ("Número de identificação") — it holds the method, not the results.</p>
     <div class="ptools">
       <input type="search" id="pollSearch" data-i18n-attr="placeholder:phSearch;aria-label:aSearch" placeholder="Search pollster, date, registration, source…" aria-label="Search polls" autocomplete="off">
       <button type="button" class="preset" id="selAll">Select all</button>
@@ -882,6 +901,64 @@ function drawModel(cv,r,[lo,hi],list){
   }
   c.strokeStyle=fg; c.lineWidth=1.5; c.setLineDash([4,4]); c.beginPath(); c.moveTo(X(50),y1); c.lineTo(X(50),y0); c.stroke(); c.setLineDash([]);
 }
+// ---------- biggest pollsters ----------
+// Pollsters with the largest known sample, plus the three in the default selection.
+const BIG_PIN=['Datafolha','Quaest','Vox Brasil'], BIG_MORE=5;
+function fieldEnd(p){                 // last fieldwork day as days before the vote; release date if unknown
+  const m=/(\d+)(?:-(\d+))?$/.exec(p.field||''), mon=/^Sep/.test(p.field)?9:10;
+  if(!m) return p.days;
+  const d=new Date(2026,mon-1,+(m[2]||m[1]));
+  return Math.round((new Date(2026,9,25)-d)/864e5);
+}
+function bigPollsters(){
+  const maxN={}; POLLS.forEach(p=>{ if(p.nKnown) maxN[p.name]=Math.max(maxN[p.name]||0,p.n); });
+  const others=Object.keys(maxN).filter(n=>!BIG_PIN.includes(n)).sort((a,b)=>maxN[b]-maxN[a]).slice(0,BIG_MORE);
+  return [...BIG_PIN,...others].map(name=>({name,maxN:maxN[name]||0,
+    polls:POLLS.filter(p=>p.name===name).sort((a,b)=>fieldEnd(b)-fieldEnd(a))}));
+}
+function renderInstGrid(){
+  const grid=$('instGrid'); if(!grid) return; grid.innerHTML='';
+  const all=POLLS.map(fieldEnd), dMax=Math.max(...all)+1;
+  bigPollsters().forEach(g=>{
+    if(!g.polls.length) return;
+    const last=g.polls[g.polls.length-1], prev=g.polls[g.polls.length-2];
+    const lw=last.lula>last.flavio, fw=last.flavio>last.lula;
+    let chg='';
+    if(prev){
+      const d=last.flavio-prev.flavio, who=d>0?'Flávio':'Lula', col=d>0?'--flavio':'--lula';
+      chg=Math.abs(d)<0.05?T(`No change since the ${fmtField(prev.field)} poll`,`Sem mudança desde a de ${fmtField(prev.field)}`)
+        :`<span style="color:var(${col});font-weight:600">${who} +${fmt1(Math.abs(d))}</span> ${T('since the','desde a de')} ${fmtField(prev.field)}${T(' poll','')}`;
+    } else chg=T('Only one poll','Só uma pesquisa');
+    const card=document.createElement('div'); card.className='icard';
+    card.innerHTML=`<div class="top"><h3>${esc(g.name)}</h3><span class="last">${T('latest: fieldwork','última: campo')} ${fmtField(last.field)}</span></div>
+      <div class="score"><span style="color:var(--lula)">■</span> ${lw?'<b>':''}Lula ${fmt1(last.lula)}${lw?'</b>':''} × <span style="color:var(--flavio)">■</span> ${fw?'<b>':''}Flávio ${fmt1(last.flavio)}${fw?'</b>':''}</div>
+      <div class="chg">${chg}</div>
+      <canvas aria-label="${esc(g.name)}: ${T('Lula and Flávio in each poll','Lula e Flávio em cada pesquisa')}"></canvas>
+      <div class="foot"><span>${g.polls.length} ${T(g.polls.length>1?'polls':'poll',g.polls.length>1?'pesquisas':'pesquisa')}</span><span>${g.maxN?T('largest sample','maior amostra')+' '+g.maxN.toLocaleString(LOC()):''}</span></div>`;
+    grid.appendChild(card);
+    drawInst(card.querySelector('canvas'),g.polls,dMax);
+  });
+}
+function drawInst(cv,ps,dMax){
+  const c=cv.getContext('2d'), dpr=Math.min(2,window.devicePixelRatio||1);
+  const W=cv.clientWidth||300, H=Math.max(150,Math.round(W*0.48));
+  cv.width=W*dpr; cv.height=H*dpr; c.setTransform(dpr,0,0,dpr,0,0); c.clearRect(0,0,W,H);
+  const x0=30,x1=W-8,y0=H-20,y1=8, lo=44, hi=56;
+  const X=d=>x0+(dMax-d)/dMax*(x1-x0), Y=v=>y0-(Math.max(lo,Math.min(hi,v))-lo)/(hi-lo)*(y0-y1);
+  const line=cssv('--line'), faint=cssv('--faint'), fg=cssv('--fg');
+  c.font='10.5px "IBM Plex Mono",monospace'; c.textAlign='right'; c.textBaseline='middle';
+  for(let v=lo; v<=hi; v+=4){ c.strokeStyle=line; c.globalAlpha=.6; c.lineWidth=1; c.beginPath(); c.moveTo(x0,Y(v)); c.lineTo(x1,Y(v)); c.stroke();
+    c.globalAlpha=1; c.fillStyle=faint; c.fillText(v,x0-5,Y(v)); }
+  c.strokeStyle=fg; c.globalAlpha=.5; c.setLineDash([3,3]); c.beginPath(); c.moveTo(x0,Y(50)); c.lineTo(x1,Y(50)); c.stroke(); c.setLineDash([]); c.globalAlpha=1;
+  c.textBaseline='top'; c.fillStyle=faint;
+  c.textAlign='left'; c.fillText((25-Math.floor(dMax))+T(' Oct',' out'),x0,y0+5);
+  c.textAlign='right'; c.fillText('25'+T(' Oct',' out'),x1,y0+5);
+  [['lula','--lula'],['flavio','--flavio']].forEach(([k,col])=>{
+    const cc=cssv(col); c.strokeStyle=cc; c.fillStyle=cc; c.lineWidth=2;
+    c.beginPath(); ps.forEach((p,i)=>{ const x=X(fieldEnd(p)), y=Y(p[k]); i?c.lineTo(x,y):c.moveTo(x,y); }); c.stroke();
+    ps.forEach(p=>{ c.beginPath(); c.arc(X(fieldEnd(p)),Y(p[k]),3,0,2*Math.PI); c.fill(); });
+  });
+}
 function hexA(hex,a){
   hex=hex.replace('#','');
   if(hex.length===3)hex=hex.split('').map(c=>c+c).join('');
@@ -891,10 +968,10 @@ function hexA(hex,a){
 
 // ---------- render ----------
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function srcLink(url){
+function srcLink(url,note){
   let u; try{ u=new URL(url); }catch(e){ return '—'; }
   if(u.protocol!=='https:'&&u.protocol!=='http:') return '—';
-  return `<a href="${esc(u.href)}" target="_blank" rel="noopener" title="${esc(u.hostname.replace(/^www\./,''))}">link ↗</a>`;
+  return `<a href="${esc(u.href)}" target="_blank" rel="noopener" title="${esc(u.hostname.replace(/^www\./,'')+(note?' — '+note:''))}">link ↗</a>`;
 }
 function render(){
   const agg=aggregate();
@@ -911,12 +988,12 @@ function render(){
         <span class="pollname">${p.name}</span></label></td>
       <td class="num">${fmtField(p.field)}</td>
       <td class="num">${p.released}</td>
-      <td class="num">${p.n.toLocaleString(LOC())}</td>
+      <td class="num">${p.nKnown?p.n.toLocaleString(LOC()):`<span class="why" title="${T('Sample size not published; weighted like a 2,000-person poll.','Amostra não divulgada; ponderada como uma pesquisa de 2.000 entrevistas.')}">—</span>`}</td>
       <td class="num" style="color:var(--lula)">${fmt1(p.lula)}</td>
       <td class="num" style="color:var(--flavio)">${fmt1(p.flavio)}</td>
       <td class="num"><span class="tcell">${active?Math.round(wmap[p.id]/agg.W*100)+'%':(w=>`<span class="why" title="${w.tip}">${w.txt}</span>`)(whyOff(p))}<span class="wbar" style="width:${wpct*0.5}px"></span></span></td>
       <td class="num">${p.reg?esc(p.reg):'—'}</td>
-      <td>${srcLink(p.src)}</td>`;
+      <td>${srcLink(p.src,p.note)}</td>`;
     body.appendChild(tr);
   });
   body.querySelectorAll('input[data-poll]').forEach(cb=>cb.addEventListener('change',e=>{
@@ -1052,7 +1129,7 @@ const DEFAULT_PICK=new Set(['Datafolha','Quaest','Vox Brasil']);
 function resetBase(){ S={...BASE, exclOld:false}; OLD_OFF.clear(); POLLS.forEach(p=>p.on=DEFAULT_PICK.has(p.name)); setExclOld(BASE.exclOld); syncInputs(); }
 $('reset').addEventListener('click',()=>{resetBase(); render();});
 
-const redrawCharts=()=>{const a=aggregate();if(a){draw(simulate(a));drawTrend(trend(a));renderCompare(a);}};
+const redrawCharts=()=>{const a=aggregate();if(a){draw(simulate(a));drawTrend(trend(a));renderCompare(a);} renderInstGrid();};
 let rt; window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(redrawCharts,150);});
 const mq=window.matchMedia('(prefers-color-scheme:dark)');
 mq.addEventListener&&mq.addEventListener('change',redrawCharts);
@@ -1067,7 +1144,7 @@ async function boot(){
       'Não foi possível carregar polls.json. Rode scripts/build_dashboard_data.py e sirva a pasta public/ por HTTP.');
     return;
   }
-  setAsof(); resetBase(); render();
+  setAsof(); resetBase(); render(); renderInstGrid();
 }
 function renderHistory(){
   const sign=x=>(x<0?'−':'+')+fmt1(Math.abs(x));
@@ -1148,12 +1225,14 @@ const I18N_PT={
   hTurnL:`50% = os eleitores que chegam ou deixam de votar se dividem como cara ou coroa e não mudam nada. Coloque acima de 50% se um comparecimento alto trouxer sobretudo eleitores de Lula.`,
   tHouse:`Corrigir pelos erros passados das pesquisas (2018, 2022)`,
   hHist:`2º turnos anteriores: últimas pesquisas × resultado`,
+  hBig:`Maiores institutos, pesquisa a pesquisa`,
+  nBig:`Todas as pesquisas de 2º turno dos institutos com as maiores amostras, mais Datafolha, Quaest e Vox Brasil. Números de votos válidos como divulgados, sem correção, pelo último dia de campo. Mostra todas as pesquisas deles, independentemente do que está marcado abaixo.`,
   tExcl:`Excluir pesquisas com mais de 10 dias`,
   tLatest:`Só a pesquisa mais recente de cada instituto`,
   tSample:`Ponderar pelo tamanho da amostra`,
   reset:`Voltar ao cenário base`,
   hPolls:`Pesquisas no modelo`,
-  nPolls:`Fatia de votos válidos entre os dois candidatos, como divulgada (brancos, nulos e indecisos excluídos); o modelo pode reduzir a de Lula pelo erro passado do instituto. Só Datafolha, Quaest e Vox Brasil vêm marcados quando a página abre; marque qualquer outra pesquisa, ou um instituto inteiro, para incluí-la. As barras mostram o peso atual de cada pesquisa; linhas esmaecidas estão fora do modelo, e a coluna de peso diz por quê (ex.: "substituída": uma rodada anterior de um instituto que tem pesquisa mais nova — desmarque "Só a pesquisa mais recente de cada instituto" para contá-la). Os links de fonte levam à reportagem de onde veio cada número; consulte o número de registro no <a href="https://pesqele-divulgacao.tse.jus.br/app/pesquisa/listar.xhtml" target="_blank" rel="noopener">PesqEle</a> do TSE ("Número de identificação") — ele guarda a metodologia, não os resultados.`,
+  nPolls:`Fatia de votos válidos entre os dois candidatos, como divulgada (brancos, nulos e indecisos excluídos); o modelo pode reduzir a de Lula pelo erro passado do instituto. Só Datafolha, Quaest e Vox Brasil vêm marcados quando a página abre; marque qualquer outra pesquisa, ou um instituto inteiro, para incluí-la. As barras mostram o peso atual de cada pesquisa; linhas esmaecidas estão fora do modelo, e a coluna de peso diz por quê (ex.: "substituída": uma rodada anterior de um instituto que tem pesquisa mais nova — desmarque "Só a pesquisa mais recente de cada instituto" para contá-la). Os links de fonte levam à reportagem de onde veio cada número; pesquisas sem amostra ou registro vêm do agregador urnaaberta.com.br (passe o mouse no link para detalhes); consulte o número de registro no <a href="https://pesqele-divulgacao.tse.jus.br/app/pesquisa/listar.xhtml" target="_blank" rel="noopener">PesqEle</a> do TSE ("Número de identificação") — ele guarda a metodologia, não os resultados.`,
   phSearch:`Buscar instituto, data, registro, fonte…`,
   aSearch:`Buscar pesquisas`,
   lgInst:`Institutos`,
@@ -1212,7 +1291,7 @@ function setLang(l){
   try{ const u=new URL(location.href); u.searchParams.set('lang',l); history.replaceState(null,'',u); }catch(e){}
   applyStatic();
   POLLS.forEach(p=>p.released=fmtDate(p.rel));
-  setAsof(); renderHistory(); syncInputs(); if(POLLS.length) render();
+  setAsof(); renderHistory(); syncInputs(); if(POLLS.length){ render(); renderInstGrid(); }
 }
 document.querySelectorAll('.lang button').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
 applyStatic();

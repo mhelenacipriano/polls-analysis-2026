@@ -14,6 +14,7 @@ out = [{
     "released": p["released"], "days": p["days"], "n": p["n"],
     "flavio": p["flavio"], "groupA": p["group_a"],
     "reg": p["registration"], "src": p["source"],
+    "nKnown": p["n_known"], "note": p["notes"],
 } for p in polls]
 dest = ROOT / "public" / "polls.json"
 dest.write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")

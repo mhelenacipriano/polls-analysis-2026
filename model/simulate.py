@@ -40,7 +40,9 @@ def load_polls(path):
                 "field_dates": row.get("field_dates", ""),
                 "released": row["released"],
                 "days": (ELECTION_DAY - released).days,
-                "n": int(row["sample_size"] or 2000),
+                "n": int(row["sample_size"] or 2000),  # unknown sample: weigh it like a typical 2,000
+                "n_known": bool(row["sample_size"]),
+                "notes": row.get("notes", ""),
                 "flavio": float(row["flavio_valid"]),
                 "group_a": row.get("group_a", "0") == "1",
                 "registration": row.get("tse_registration", ""),
