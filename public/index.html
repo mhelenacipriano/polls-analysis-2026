@@ -266,6 +266,18 @@ body{margin:0;font-size:14px}
   .method h3{font-size:13px;color:var(--fg);margin:14px 0 4px;font-family:var(--font-display)}
   .method code{font-family:var(--font-mono);font-size:12px;background:var(--surface-2);padding:1px 5px;border-radius:4px;color:var(--fg)}
   .method ul{margin:4px 0;padding-left:18px}
+  .result{padding:18px 16px 16px}
+  .result .rflag{font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ok);font-weight:600}
+  .result h2{font-size:clamp(20px,5.5vw,26px);margin:3px 0 0;color:var(--fg)}
+  .result .obig{font-family:var(--font-display);font-weight:800;font-size:clamp(20px,6vw,30px);display:flex;flex-wrap:wrap;gap:2px 16px;margin-top:10px}
+  .result .osub{font-size:12.5px;color:var(--muted);margin-top:8px}
+  .result .rbar{display:flex;height:12px;border-radius:7px;overflow:hidden;margin-top:12px;border:1px solid var(--line)}
+  .result .rbar div{height:100%}
+  .analysis{padding:18px 16px 16px}
+  .analysis h2{font-size:15px}
+  .analysis #whyBody{font-size:13.5px;color:var(--muted);line-height:1.62;margin-top:8px}
+  .analysis #whyBody p{margin:0 0 9px}
+  .analysis #whyBody b{color:var(--fg);font-weight:600}
   footer{margin-top:22px;font-size:11.5px;color:var(--faint);text-align:center;line-height:1.6}
 
   @media (max-width:520px){
@@ -295,14 +307,25 @@ body{margin:0;font-size:14px}
       <div class="lang" role="group" aria-label="Language / Idioma"><button type="button" data-lang="en" lang="en">EN</button><button type="button" data-lang="pt" lang="pt-BR">PT</button></div>
     </div>
     <p class="eyebrow" data-i18n="eyebrow">2026 Brazilian Presidential Runoff · Monte Carlo</p>
-    <h1 data-i18n="h1">Can Lula win? — tomorrow's odds</h1>
-    <p class="sub" data-i18n="sub">A probabilistic model of Lula's chance in the October 25 second round against Flávio Bolsonaro, aggregating the public valid-vote polls and simulating 40,000 elections. Move the sliders to test different assumptions about polling error and late swing.</p>
-    <p class="disc" data-i18n="disc"><b>This is a model, not a prediction.</b> The race is a statistical tie; polls can be collectively wrong, as Brazil's 2022 runoff showed. The output is a range of plausible outcomes under assumptions you control — not a forecast of who will win.</p>
+    <h1 data-i18n="h1">Lula vs Flávio — the model vs the result</h1>
+    <p class="sub" data-i18n="sub">A probabilistic model of the October 25 second round against Flávio Bolsonaro, built from the public valid-vote polls and 40,000 simulations. The election is over — the official result is at the top; everything below is the pre-vote model, kept up so you can see what it said and where it went wrong.</p>
+    <p class="disc" data-i18n="disc"><b>It was a model, not a prediction.</b> It gave a range of plausible outcomes under assumptions you control, not a call of who would win — and the polls it was built on collectively underestimated Lula.</p>
   </header>
+
+  <section class="card result">
+    <div class="rflag" data-i18n="rFlag">Result · 25 Oct 2026 · TSE, 100% counted</div>
+    <h2 data-i18n="hResult">Lula re-elected</h2>
+    <div id="resBody"></div>
+  </section>
+
+  <section class="card analysis">
+    <h2 data-i18n="hWhy">Why the polls — and this model — missed</h2>
+    <div id="whyBody"></div>
+  </section>
 
   <section class="card odds">
     <div class="odds-top">
-      <h2 data-i18n="hOdds">Win probability</h2>
+      <h2 data-i18n="hOdds">Win probability — the pre-vote model</h2>
       <span class="asof" id="asof">as of 24 Oct 2026 · eve of vote</span>
     </div>
     <div class="names">
@@ -516,6 +539,11 @@ const OVERSEAS={ lula:64264, flavio:54255, countriesL:36, countriesF:12, asOf:'1
   r1L:157387, r1F:143900,
   src:'https://g1.globo.com/mundo/noticia/2026/10/25/votacao-no-exterior-confira-os-votos-no-2-turno-entre-lula-e-flavio.ghtml' };
 const REAL=()=>POLLS.filter(p=>!p.special);   // the actual polls (excludes the overseas row)
+// Official result of the 25 Oct 2026 runoff (TSE, 100% counted; via urnaaberta.com.br).
+const RESULT={ lulaPct:51.79, flavioPct:48.21, lulaVotes:64256232, flavioVotes:59826041,
+  turnoutPct:80.78, abstPct:19.22,
+  modelWin:37, modelLula:49.4,   // the dashboard's default call on election eve
+  src:'https://urnaaberta.com.br/' };
 
 // ---------- language: English or Brazilian Portuguese ----------
 // Chosen by ?lang=, then the visitor's last choice, then the browser language.
@@ -1148,7 +1176,7 @@ function render(){
     $('fav').textContent=T('No polls selected. Tick at least one poll in the table below.','Nenhuma pesquisa selecionada. Marque pelo menos uma pesquisa na tabela abaixo.');
     ctx.clearRect(0,0,canvas.width,canvas.height); renderTrend(null); renderCompare(null); return;
   }
-  renderTrend(agg); renderCompare(agg); renderOverseas();
+  renderTrend(agg); renderCompare(agg); renderOverseas(); renderResult(); renderWhy();
   const res=simulate(agg);
   const pL=Math.round(res.pL*100), pF=100-pL;
   $('probL').textContent=pL+'%'; $('probF').textContent=pF+'%';
@@ -1312,6 +1340,37 @@ function renderHistory(){
     <table><thead><tr><th>Ano</th><th class="num">Votos válidos, 1º turno</th><th class="num">2º turno</th><th class="num">Variação</th></tr></thead><tbody>${trows}</tbody></table>
     <p class="note" style="margin-top:8px">Valores iniciais tirados daqui: comparecimento extra de ${sign(HIST_TURN)}% (a variação média) e ${HIST_CONV}% dos brancos, nulos e indecisos acabando num candidato (a fatia “nenhum” das últimas pesquisas comparada com a de brancos e nulos nos votos: ${HISTORY.map(h=>Math.round(h.conv)+'%').join(', ')}). Fontes: últimas pesquisas pelas tabelas da Wikipédia; resultados e comparecimento pelo TSE.</p>`);
 }
+function renderResult(){
+  const el=$('resBody'); if(!el) return;
+  const R=RESULT;
+  el.innerHTML=`<div class="obig"><span style="color:var(--lula)">Lula ${fmt1(R.lulaPct)}%</span>`+
+    `<span style="color:var(--flavio)">Flávio ${fmt1(R.flavioPct)}%</span></div>`+
+    `<div class="osub">`+T(
+      `Valid votes · Lula ${R.lulaVotes.toLocaleString(LOC())} to Flávio ${R.flavioVotes.toLocaleString(LOC())} · a ${fmt1(R.lulaPct-R.flavioPct)}-point win · turnout ${fmt1(R.turnoutPct)}%.`,
+      `Votos válidos · Lula ${R.lulaVotes.toLocaleString(LOC())} contra ${R.flavioVotes.toLocaleString(LOC())} de Flávio · vitória de ${fmt1(R.lulaPct-R.flavioPct)} pontos · comparecimento ${fmt1(R.turnoutPct)}%.`)+
+    `</div><div class="rbar"><div style="background:var(--lula);width:${R.lulaPct}%"></div><div style="background:var(--flavio);width:${R.flavioPct}%"></div></div>`;
+}
+function renderWhy(){
+  const el=$('whyBody'); if(!el) return;
+  const R=RESULT, act=R.lulaPct;
+  // each pollster's final poll vs the result
+  const latest={}; REAL().forEach(p=>{ const c=latest[p.name]; if(!c||p.days<c.days) latest[p.name]=p; });
+  const ps=Object.values(latest), n=ps.length;
+  const errs=ps.map(p=>act-p.lula).sort((a,b)=>a-b);
+  const mean=errs.reduce((a,b)=>a+b,0)/n, ahead=ps.filter(p=>p.lula>50).length;
+  const diff=fmt1(R.lulaPct-R.flavioPct), mn=fmt1(errs[0]), mx=fmt1(errs[n-1]), mAvg=fmt1(mean);
+  el.innerHTML=T(
+    `<p>The model's default call on election eve was <b>Lula ${fmt1(R.modelLula)}%</b> — a <b>${R.modelWin}% chance</b>, with Flávio narrowly ahead. The result was <b>Lula ${fmt1(R.lulaPct)}%</b>, a ${diff}-point win. The underdog won.</p>`+
+    `<p><b>The model only averaged the polls — and the polls missed.</b> Of the ${n} pollsters' final polls, only ${ahead} had Lula ahead; on average they put Lula about <b>${mAvg} points too low</b> (from ${mn} to ${mx}). The model faithfully reflected that, so it inherited the error.</p>`+
+    `<p><b>It was a collective miss toward Flávio</b> — the reverse of 2018 and 2022, when the polls overstated the PT candidate. So the “correct for past poll errors” option would have made it worse: the historical lean it assumed flipped this time. Two past elections were too few to trust.</p>`+
+    `<p><b>The model wasn't blind to it.</b> A Lula win was inside its range and it gave him a real ${R.modelWin}% — not a long shot. But the central estimate leaned the wrong way because its inputs did; ±2-point polling error turned out to be about right in size, just in the direction few expected.</p>`+
+    `<p><b>What did point the right way:</b> the all-pollster trend (Lula gaining ~0.08 pts/day) and the overseas vote (Lula ~54%) both leaned to Lula. The late swing to Lula was real and, at the very end, stronger than the straight-line trend caught — the “weight recent polls” view that showed a slowdown was misled by polls that were themselves lagging.</p>`,
+    `<p>A previsão padrão do modelo na véspera era <b>Lula ${fmt1(R.modelLula)}%</b> — <b>${R.modelWin}% de chance</b>, com Flávio ligeiramente à frente. O resultado foi <b>Lula ${fmt1(R.lulaPct)}%</b>, vitória de ${diff} pontos. O azarão venceu.</p>`+
+    `<p><b>O modelo só fez a média das pesquisas — e as pesquisas erraram.</b> Das ${n} últimas pesquisas de cada instituto, só ${ahead} tinham Lula à frente; em média colocaram Lula cerca de <b>${mAvg} pontos abaixo</b> (de ${mn} a ${mx}). O modelo refletiu isso fielmente e herdou o erro.</p>`+
+    `<p><b>Foi um erro coletivo a favor de Flávio</b> — o inverso de 2018 e 2022, quando as pesquisas superestimaram o candidato do PT. Por isso a opção “corrigir pelos erros passados” teria piorado: a tendência histórica que ela supunha se inverteu. Duas eleições eram poucas para confiar.</p>`+
+    `<p><b>O modelo não ignorou essa possibilidade.</b> Uma vitória de Lula estava dentro da sua faixa e ele dava ${R.modelWin}% reais — não era improvável. Mas a estimativa central pendeu para o lado errado porque os dados pendiam; o erro de ±2 pontos acertou no tamanho, só na direção que poucos esperavam.</p>`+
+    `<p><b>O que apontou certo:</b> a tendência com todos os institutos (Lula ganhando ~0,08 pts/dia) e o voto no exterior (Lula ~54%) pendiam para Lula. A virada final para Lula foi real e, no fim, mais forte do que a reta captava — a visão “dar peso às recentes”, que mostrava desaceleração, foi enganada por pesquisas que já estavam atrasadas.</p>`);
+}
 function renderOverseas(){
   const el=$('overBody'); if(!el) return;
   const ov=OVERSEAS.lula+OVERSEAS.flavio, lp=100*OVERSEAS.lula/ov, fp=100*OVERSEAS.flavio/ov;
@@ -1336,10 +1395,13 @@ const I18N_PT={
   gateP:`Esta página é protegida por senha.`,
   gatePh:`Senha`,
   gateGo:`Entrar`,
-  h1:`Lula pode vencer? — as chances de amanhã`,
-  sub:`Um modelo probabilístico da chance de Lula no segundo turno de 25 de outubro contra Flávio Bolsonaro. Ele agrega as pesquisas públicas de votos válidos e simula 40.000 eleições. Mova os controles para testar outras hipóteses sobre o erro das pesquisas e uma virada de última hora.`,
-  disc:`<b>Isto é um modelo, não uma previsão.</b> A disputa está em empate estatístico; as pesquisas podem errar todas juntas, como mostrou o segundo turno de 2022. O resultado é uma faixa de desfechos plausíveis sob hipóteses que você controla — não um prognóstico de quem vai ganhar.`,
-  hOdds:`Probabilidade de vitória`,
+  h1:`Lula x Flávio — o modelo e o resultado`,
+  sub:`Um modelo probabilístico do segundo turno de 25 de outubro contra Flávio Bolsonaro, feito com as pesquisas públicas de votos válidos e 40.000 simulações. A eleição acabou — o resultado oficial está no topo; tudo abaixo é o modelo de antes da votação, mantido para ver o que ele dizia e onde errou.`,
+  disc:`<b>Era um modelo, não uma previsão.</b> Dava uma faixa de desfechos plausíveis sob hipóteses que você controla, não um palpite de quem venceria — e as pesquisas em que se baseou subestimaram Lula coletivamente.`,
+  rFlag:`Resultado · 25/10/2026 · TSE, 100% apurado`,
+  hResult:`Lula reeleito`,
+  hWhy:`Por que as pesquisas — e este modelo — erraram`,
+  hOdds:`Probabilidade de vitória — o modelo de antes da votação`,
   hDist:`Distribuição da fatia de votos válidos de Lula`,
   nDist:`Cada eleição simulada é um sorteio. Tudo à direita da linha de 50% é vitória de Lula; tudo à esquerda, vitória de Flávio.`,
   aDist:`Distribuição simulada da fatia de votos de Lula`,
