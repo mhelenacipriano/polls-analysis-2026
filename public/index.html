@@ -215,6 +215,7 @@ body{margin:0;font-size:14px}
   .preset{font-family:var(--font-body);font-size:12.5px;padding:7px 11px;border-radius:999px;cursor:pointer;
     border:1px solid var(--line);background:var(--surface-2);color:var(--fg)}
   .preset:hover{border-color:var(--muted)}
+  .preset.acc{border-color:var(--ok);color:var(--ok);font-weight:600}
   .preset:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--flavio);outline-offset:2px}
   .reset{margin-top:14px;font-size:12.5px;color:var(--muted);background:none;border:none;cursor:pointer;
     text-decoration:underline;padding:0;font-family:var(--font-body)}
@@ -409,12 +410,14 @@ body{margin:0;font-size:14px}
     <h2 data-i18n="hCtl">Model assumptions</h2>
     <p class="lead" data-i18n="nCtl">Scenarios set the sliders; adjust from there.</p>
     <div class="presets" id="presets">
+      <button class="preset acc" data-preset="actual" data-i18n="prActual">Actual result (25 Oct)</button>
       <button class="preset" data-preset="base" data-i18n="prBase">Base case</button>
       <button class="preset" data-preset="tight" data-i18n="prTight">Polls dead-on</button>
       <button class="preset" data-preset="miss2022" data-i18n="prMiss">2022-style miss (polls over-read Lula)</button>
       <button class="preset" data-preset="lulaswing" data-i18n="prSwing">Late Lula swing</button>
       <button class="preset" data-preset="noise" data-i18n="prNoise">High uncertainty</button>
     </div>
+    <p class="hint" data-i18n="nActual" style="margin-top:8px">“Actual result” tunes the sliders to reproduce the official 51.8%: turnout +2.4% (abstention fell to 19.2%), about 60% of undecided/blank-null voters breaking to a candidate, and a net +2.4-point swing to Lula the polls missed. The turnout and undecided figures are real; the result can't separate turnout from vote-switching, so the swing slider carries the remainder.</p>
 
     <div class="ctl">
       <div class="row"><label for="sigma" data-i18n="lSigma">Polling error (how far off polls could collectively be)</label><span class="val" id="sigmaV"></span></div>
@@ -543,6 +546,7 @@ const REAL=()=>POLLS.filter(p=>!p.special);   // the actual polls (excludes the 
 const RESULT={ lulaPct:51.79, flavioPct:48.21, lulaVotes:64256232, flavioVotes:59826041,
   turnoutPct:80.78, abstPct:19.22,
   modelWin:37, modelLula:49.4,   // the dashboard's default call on election eve
+  actTurn:2.4, actConv:60,       // real turnout rise and undecided-realisation, for the "Actual result" preset
   src:'https://urnaaberta.com.br/' };
 
 // ---------- language: English or Brazilian Portuguese ----------
@@ -1291,6 +1295,15 @@ $('exclOld').addEventListener('change',e=>{setExclOld(e.target.checked);render()
 $('overseas').addEventListener('change',e=>{S.overseas=e.target.checked;render();});
 $('presets').addEventListener('click',e=>{
   const p=e.target.dataset.preset; if(!p)return;
+  if(p==='actual'){
+    // Set turnout/undecided sliders to the real figures, then let the swing slider carry the
+    // remaining gap so the central estimate lands on the official result.
+    S={...BASE, exclOld:S.exclOld, pool:8, conv:RESULT.actConv, convL:50, turn:RESULT.actTurn, turnL:50};
+    setExclOld(BASE.exclOld);
+    const a=aggregate(); const base=a?adjust(a.m):RESULT.modelLula;
+    S.bias=Math.round((RESULT.lulaPct-base)*10)/10;
+    syncInputs(); render(); return;
+  }
   const next={...PRESETS[p]}; S={...next, exclOld:S.exclOld}; setExclOld(next.exclOld); syncInputs(); render();
 });
 // Base case = default settings with the default pollsters selected, then the 10-day rule applied.
@@ -1430,6 +1443,8 @@ const I18N_PT={
   prMiss:`Erro como em 2022 (pesquisas superestimam Lula)`,
   prSwing:`Virada tardia de Lula`,
   prNoise:`Alta incerteza`,
+  prActual:`Resultado real (25/10)`,
+  nActual:`“Resultado real” ajusta os controles para reproduzir os 51,8% oficiais: comparecimento +2,4% (a abstenção caiu para 19,2%), cerca de 60% dos indecisos/brancos-nulos indo para um candidato, e uma virada líquida de +2,4 pontos a favor de Lula que as pesquisas não captaram. Os números de comparecimento e indecisos são reais; o resultado não separa comparecimento de troca de voto, então o controle de virada carrega o restante.`,
   lSigma:`Erro das pesquisas (o quanto elas podem errar juntas)`,
   hSigma:`Desvio-padrão da fatia final de Lula, em pontos (a margem varia o dobro). É a principal fonte de incerteza — o erro amostral fica minúsculo quando as pesquisas são agregadas. Cerca de 2 pts (±4 com 95% de confiança) corresponde à precisão recente em segundos turnos no Brasil.`,
   lBias:`Virada tardia / ajuste de viés dos institutos`,
